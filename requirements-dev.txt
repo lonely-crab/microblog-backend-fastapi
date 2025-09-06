@@ -1,0 +1,8 @@
+pytest>=8.0
+pytest-asyncio
+httpx
+mypy
+flake8
+black
+isort
+coverage[toml]
