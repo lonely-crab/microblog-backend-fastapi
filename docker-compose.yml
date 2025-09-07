@@ -2,9 +2,9 @@ services:
   db:
     image: postgres:16
     environment: 
-      POSTGRES_DB: microblog
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -17,7 +17,7 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgressql+psycopg2://user:password@db:5432/microblog
+      DATABASE_URL: ${DATABASE_URL}
 
   frontend:
     image: nginx:alpine
