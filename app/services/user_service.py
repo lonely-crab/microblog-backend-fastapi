@@ -1,15 +1,15 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import Column, select
 from sqlalchemy.orm import selectinload
 
 from app.db.models import User, Follower
 from typing import Optional
 
 
-async def get_user_profile(session: AsyncSession, target_user_id: int) -> Optional[dict]:
+async def get_user_profile(session: AsyncSession, target_user_id: Column[int] | int) -> Optional[dict]:
     result = await session.execute(select(User).options(
-        selectinload(User.followers).selectinload(Follower.follower), # should be created in models.py via backref
-        selectinload(User.following).selectinload(Follower.following) # should be created in models.py via backref
+        selectinload(User.followers).selectinload(Follower.follower), # pyright: ignore[reportAttributeAccessIssue]
+        selectinload(User.following).selectinload(Follower.following) # pyright: ignore[reportAttributeAccessIssue]
     ).where(User.id == target_user_id)
     )
 

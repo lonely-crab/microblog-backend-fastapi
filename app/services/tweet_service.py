@@ -29,7 +29,7 @@ async def create_tweet(session: AsyncSession, request: CreateTweetRequest, autho
     return tweet.id
 
 
-async def delete_tweet(session: AsyncSession, tweet_id: int, current_user_id: int) -> bool:
+async def delete_tweet(session: AsyncSession, tweet_id: int, current_user_id: Column[int]) -> bool:
     result = await session.execute(select(Tweet).where(Tweet.id == tweet_id, Tweet.author_id == current_user_id))
 
     tweet = result.scalar_one_or_none()
@@ -37,21 +37,21 @@ async def delete_tweet(session: AsyncSession, tweet_id: int, current_user_id: in
     if tweet is None:
         return False
     
-    await session.delete(Tweet)
+    await session.delete(tweet)
     await session.commit()
 
     return True
 
 
-async def get_user_feed(session: AsyncSession, user_id: int) -> List[dict]:
+async def get_user_feed(session: AsyncSession, user_id: Column[int]) -> List[dict]:
     # users that are followed by our user
     following_subquery = select(Follower.following_id).where(Follower.follower_id == user_id)
 
     # get all tweets + join author, media and likes
-    result = await session.execute(select(Tweet).options(
-        selectinload(Tweet.author),  # should be created in models.py via backref
-            selectinload(Tweet.media),
-            selectinload(Tweet.likes).selectinload(Like.user)  # should be created in models.py via backref
+    result = await session.execute(select(Tweet).outerjoin(Like).options(
+        selectinload(Tweet.author),  # pyright: ignore[reportAttributeAccessIssue]
+        selectinload(Tweet.media),
+        selectinload(Tweet.likes).selectinload(Like.user) # pyright: ignore[reportAttributeAccessIssue]
     )
     .where(Tweet.author_id.in_(following_subquery))
     .order_by(func.count(Like.tweet_id).desc())
@@ -70,7 +70,7 @@ def format_tweet_for_response(tweet: Tweet) -> dict:
         "attachments": [media.file_path for media in tweet.media],
         "author": {
             "id": tweet.author_id,
-            "name": tweet.author.id # should be created in models.py via backref
+            "name": tweet.author.id   # pyright: ignore[reportAttributeAccessIssue]
         },
         "likes": [
             {"user_id": like.user.id, "name": like.user.name}
