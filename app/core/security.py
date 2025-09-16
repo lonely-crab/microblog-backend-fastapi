@@ -1,13 +1,13 @@
 from fastapi import Header, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import AsyncGenerator
+from typing import Optional
 
 from app.db.database import get_db_session
 from app.db.models import User
 
 
-async def get_current_user(api_key: str = Header(...), session: AsyncSession = Depends(get_db_session)):
+async def get_current_user(api_key: str = Header(...), session: AsyncSession = Depends(get_db_session)) -> Optional[User]:
     """
     Authentification function for users via API key.
     """
