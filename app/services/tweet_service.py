@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, Column, func
 from sqlalchemy.orm import selectinload
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from app.db.models import Media, Tweet, User, Like, Follower
 from app.schemas import CreateTweetRequest
@@ -62,7 +62,7 @@ async def get_user_feed(session: AsyncSession, user_id: Column[int]) -> List[dic
     
     return [format_tweet_for_response(tweet=tweet) for tweet in tweets]
 
-def format_tweet_for_response(tweet: Tweet) -> dict:
+def format_tweet_for_response(tweet: Tweet) -> Dict[str, Any]:
 
     return {
         "id": tweet.id,
@@ -70,7 +70,7 @@ def format_tweet_for_response(tweet: Tweet) -> dict:
         "attachments": [media.file_path for media in tweet.media],
         "author": {
             "id": tweet.author_id,
-            "name": tweet.author.id   # pyright: ignore[reportAttributeAccessIssue]
+            "name": tweet.author.name   # pyright: ignore[reportAttributeAccessIssue]
         },
         "likes": [
             {"user_id": like.user.id, "name": like.user.name}
