@@ -34,7 +34,7 @@ class Media(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     file_path = Column(String, nullable=False)
-    tweet_id = Column(Integer, ForeignKey("tweets.id"), nullable=False)
+    tweet_id = Column(Integer, ForeignKey("tweets.id"), nullable=True)
 
 
 class Like(Base):
