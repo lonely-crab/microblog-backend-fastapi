@@ -7,7 +7,7 @@ from app.db.models import Media
 async def upload_media(session: AsyncSession, file_path: str) -> int | Column[int]:
     media = Media(file_path=file_path)
 
-    session.add(Media)
+    session.add(media)
     await session.flush()
     await session.commit()
 
