@@ -1,1 +1,222 @@
-<!DOCTYPE html><html lang=""><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/favicon.ico"><title>twitter-clone</title><link href="/css/chunk-0420bcc4.d6bc3184.css" rel="prefetch"><link href="/css/chunk-10e0d5b4.130d80ef.css" rel="prefetch"><link href="/css/chunk-6f77c742.8d9a3d9c.css" rel="prefetch"><link href="/css/chunk-732a3e8c.6334cd6b.css" rel="prefetch"><link href="/js/chunk-0420bcc4.11441662.js" rel="prefetch"><link href="/js/chunk-10e0d5b4.e80e67b6.js" rel="prefetch"><link href="/js/chunk-6f77c742.f09861a7.js" rel="prefetch"><link href="/js/chunk-732a3e8c.57e36fb4.js" rel="prefetch"><link href="/js/chunk-76301fe8.cc56c3b1.js" rel="prefetch"><link href="/css/app.45d81840.css" rel="preload" as="style"><link href="/css/chunk-vendors.de691de6.css" rel="preload" as="style"><link href="/js/app.ee2cdef2.js" rel="preload" as="script"><link href="/js/chunk-vendors.398321e0.js" rel="preload" as="script"><link href="/css/chunk-vendors.de691de6.css" rel="stylesheet"><link href="/css/app.45d81840.css" rel="stylesheet"></head><body><noscript><strong>We're sorry but twitter-clone doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id="app"></div><script src="/js/chunk-vendors.398321e0.js"></script><script src="/js/app.ee2cdef2.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Microblog Test Frontend</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 20px auto; }
+    input, textarea, button { margin: 5px 0; padding: 6px; width: 100%; }
+    .tweet { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h1>Microblog Frontend (Test)</h1>
+
+  <h2>API Key</h2>
+  <input id="apiKey" placeholder="Введите api-key">
+  <button onclick="saveApiKey()">Сохранить ключ</button>
+
+  <h2>Новый твит</h2>
+  <textarea id="tweetText" placeholder="Ваш твит..."></textarea>
+  <input type="file" id="tweetImage">
+  <button onclick="createTweet()">Отправить</button>
+
+  <h2>Лента</h2>
+  <button onclick="loadFeed()">Обновить ленту</button>
+  <div id="feed"></div>
+
+  <script>
+  const API_BASE = "http://localhost:8000/api";
+
+  function getApiKey() {
+    return localStorage.getItem("apiKey") || "";
+  }
+
+  function saveApiKey() {
+    const key = document.getElementById("apiKey").value;
+    localStorage.setItem("apiKey", key);
+    alert("Сохранено!");
+  }
+
+  // ============= TVEETS =============
+  async function createTweet() {
+    const apiKey = getApiKey();
+    const text = document.getElementById("tweetText").value;
+    const fileInput = document.getElementById("tweetImage");
+
+    let mediaIds = [];
+    if (fileInput.files.length > 0) {
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      const res = await fetch(`${API_BASE}/medias`, {
+        method: "POST",
+        headers: { "api-key": apiKey },
+        body: formData
+      });
+      const data = await res.json();
+      console.log("UPLOAD MEDIA RESPONSE:", data);
+      if (data.result && data.data) {
+        mediaIds.push(data.data.media_id);
+      }
+    }
+
+    const res = await fetch(`${API_BASE}/tweets`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": apiKey
+      },
+      body: JSON.stringify({ tweet_data: text, tweet_media_ids: mediaIds })
+    });
+    const data = await res.json();
+    console.log("CREATE TWEET RESPONSE:", data);
+    alert(JSON.stringify(data));
+    loadFeed();
+  }
+
+  async function loadFeed() {
+    const apiKey = getApiKey();
+    const res = await fetch(`${API_BASE}/tweets`, {
+      headers: { "api-key": apiKey }
+    });
+    const data = await res.json();
+    console.log("FEED RESPONSE:", data);
+
+    const feedDiv = document.getElementById("feed");
+    feedDiv.innerHTML = "";
+
+    if (data.result && data.data && data.data.tweets) {
+      data.data.tweets.forEach(t => {
+        const div = document.createElement("div");
+        div.className = "tweet";
+        let mediaHtml = "";
+        if (t.attachments) {
+          mediaHtml = t.attachments.map(link => `<img src="${link}" width="200">`).join("");
+        }
+        div.innerHTML = `
+          <p><b>${t.author.name}</b> (id: ${t.author.id}): ${t.content}</p>
+          <div>${mediaHtml}</div>
+          <p>❤️ ${t.likes.length}</p>
+          <button onclick="likeTweet(${t.id})">Лайк</button>
+          <button onclick="unlikeTweet(${t.id})">Убрать лайк</button>
+          <button onclick="deleteTweet(${t.id})">Удалить</button>
+        `;
+        feedDiv.appendChild(div);
+      });
+    } else {
+      feedDiv.innerHTML = `<p>Ошибка или пустая лента: ${data.error_message || "нет данных"}</p>`;
+    }
+  }
+
+  async function likeTweet(id) {
+    const res = await fetch(`${API_BASE}/tweets/${id}/likes`, {
+      method: "POST",
+      headers: { "api-key": getApiKey() }
+    });
+    const data = await res.json();
+    console.log("LIKE RESPONSE:", data);
+    alert(JSON.stringify(data));
+    loadFeed();
+  }
+
+  async function unlikeTweet(id) {
+    const res = await fetch(`${API_BASE}/tweets/${id}/likes`, {
+      method: "DELETE",
+      headers: { "api-key": getApiKey() }
+    });
+    const data = await res.json();
+    console.log("UNLIKE RESPONSE:", data);
+    alert(JSON.stringify(data));
+    loadFeed();
+  }
+
+  async function deleteTweet(id) {
+    const res = await fetch(`${API_BASE}/tweets/${id}`, {
+      method: "DELETE",
+      headers: { "api-key": getApiKey() }
+    });
+    const data = await res.json();
+    console.log("DELETE RESPONSE:", data);
+    alert(JSON.stringify(data));
+    loadFeed();
+  }
+
+  // ============= PROFILES =============
+  async function loadMyProfile() {
+    const apiKey = getApiKey();
+    const res = await fetch(`${API_BASE}/users/me`, {
+      headers: { "api-key": apiKey }
+    });
+    const data = await res.json();
+    console.log("MY PROFILE RESPONSE:", data);
+    if (data.result && data.data && data.data.user) {
+      renderProfile(data.data.user);
+    } else {
+      renderProfile(null);
+    }
+  }
+
+  async function loadProfile() {
+    const apiKey = getApiKey();
+    const id = document.getElementById("profileId").value;
+    const res = await fetch(`${API_BASE}/users/${id}`, {
+      headers: { "api-key": apiKey }
+    });
+    const data = await res.json();
+    console.log(`PROFILE RESPONSE (id=${id}):`, data);
+    if (data.result && data.data && data.data.user) {
+      renderProfile(data.data.user);
+    } else {
+      renderProfile(null);
+    }
+  }
+
+  function renderProfile(user) {
+    const div = document.getElementById("profile");
+    if (!user) {
+      div.innerHTML = "<p>Пользователь не найден</p>";
+      return;
+    }
+    const followers = user.followers.map(f => `${f.name} (id:${f.id})`).join(", ");
+    const following = user.following.map(f => `${f.name} (id:${f.id})`).join(", ");
+    div.innerHTML = `
+      <div class="user-card">
+        <p><b>${user.name}</b> (id: ${user.id})</p>
+        <p>Подписчики: ${followers || "-"}</p>
+        <p>Подписки: ${following || "-"}</p>
+        <input id="followId" placeholder="id для (ан)фолловинга">
+        <button onclick="followUser()">Фолловинг</button>
+        <button onclick="unfollowUser()">Анфолловинг</button>
+      </div>
+    `;
+  }
+
+  // ============= FOLLOW =============
+  async function followUser() {
+    const apiKey = getApiKey();
+    const id = document.getElementById("followId").value;
+    const res = await fetch(`${API_BASE}/users/${id}/follow`, {
+      method: "POST",
+      headers: { "api-key": apiKey }
+    });
+    const data = await res.json();
+    console.log("FOLLOW RESPONSE:", data);
+    alert(JSON.stringify(data));
+  }
+
+  async function unfollowUser() {
+    const apiKey = getApiKey();
+    const id = document.getElementById("followId").value;
+    const res = await fetch(`${API_BASE}/users/${id}/follow`, {
+      method: "DELETE",
+      headers: { "api-key": apiKey }
+    });
+    const data = await res.json();
+    console.log("UNFOLLOW RESPONSE:", data);
+    alert(JSON.stringify(data));
+  }
+</script>
+
+</body>
+</html>
