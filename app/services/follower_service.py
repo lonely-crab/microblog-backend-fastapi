@@ -3,7 +3,7 @@ from sqlalchemy import Column, select, delete
 from app.db.models import Follower
 
 
-async def follow_user(session: AsyncSession, follower_id: Column[int], following_id: int) -> bool:
+async def follow_user(session: AsyncSession, follower_id: Column[int], following_id: Column[int]) -> bool:
     result = await session.execute(select(Follower).where(Follower.follower_id == follower_id, Follower.following_id == following_id))
 
     if result.scalar_one_or_none():
@@ -17,7 +17,7 @@ async def follow_user(session: AsyncSession, follower_id: Column[int], following
     return True
 
 
-async def unfollow_user(session: AsyncSession, follower_id: int, following_id: int) -> bool:
+async def unfollow_user(session: AsyncSession, follower_id: Column[int], following_id: Column[int]) -> bool:
     result = await session.execute(delete(Follower).where(Follower.follower_id == follower_id, Follower.following_id == following_id))
 
     await session.commit()
