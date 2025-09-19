@@ -1,8 +1,11 @@
-pytest>=8.0
+pytest
 pytest-asyncio
+pytest-cov
 httpx
 mypy
 flake8
 black
 isort
 coverage[toml]
+trio
+aiosqlite
