@@ -4,7 +4,7 @@ from sqlalchemy import Column, select, delete
 from app.db.models import Like
 
 
-async def add_like(session: AsyncSession, tweet_id: int, user_id: Column[int]) -> bool:
+async def add_like(session: AsyncSession, tweet_id: Column[int], user_id: Column[int]) -> bool:
     result = await session.execute(select(Like).where(Like.tweet_id == tweet_id, Like.user_id == user_id))
 
     if result.scalar_one_or_none():
