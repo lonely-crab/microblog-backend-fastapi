@@ -9,3 +9,4 @@ isort
 coverage[toml]
 trio
 aiosqlite
+pythgit on-multipart
