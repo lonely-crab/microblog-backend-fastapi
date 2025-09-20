@@ -17,7 +17,7 @@ async def post_tweets(request: CreateTweetRequest, api_key: str = Header(...), s
         tweet_id = await create_tweet(session=session, request=request, author_id=current_user.id)
         return ApiResponse(result=True, data={"tweet_id": tweet_id})
     except Exception as e:
-        return ApiResponse(result=False, error_type="Tweet Error", error_message=str(e))
+        return ApiResponse(result=False, error_type="TweetError", error_message=str(e))
 
 
 @router.get("/tweets")
@@ -26,7 +26,7 @@ async def get_tweets(api_key: str = Header(...), session: AsyncSession = Depends
         tweets = await get_user_feed(session=session, user_id=current_user.id)
         return ApiResponse(result=True, data={"tweets": tweets})
     except Exception as e:
-        return ApiResponse(result=False, error_type="Server Error", error_message=str(e))
+        return ApiResponse(result=False, error_type="ServerError", error_message=str(e))
     
 
 @router.delete("/tweets/{tweet_id}", response_model=ApiResponse)

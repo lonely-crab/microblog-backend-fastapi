@@ -16,6 +16,9 @@ async def create_tweet(session: AsyncSession, request: CreateTweetRequest, autho
 
         media_objs = media_objs.scalars().all()
     
+    if request.tweet_data == "" or request.tweet_data is None:
+        raise ValueError("Tweet text cannot be empty.")
+    
     tweet = Tweet(author_id=author_id, content=request.tweet_data)
     session.add(tweet)
     await session.flush()
