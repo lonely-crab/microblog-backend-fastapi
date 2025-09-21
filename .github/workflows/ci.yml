@@ -12,6 +12,7 @@ on:
 jobs:
   lint-test:
     runs-on: ubuntu-latest
+    environment: DB_DATA
     strategy:
       matrix:
         python-version: [3.13]
