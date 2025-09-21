@@ -1,8 +1,8 @@
 from typing import List
 
 from .base import BaseSchema
-from .user import UserShort
 from .like import LikeOut
+from .user import UserShort
 
 
 class CreateTweetRequest(BaseSchema):

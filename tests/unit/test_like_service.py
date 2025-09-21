@@ -1,8 +1,7 @@
 import pytest
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import User, Like, Tweet
+from app.db.models import Like, Tweet, User
 from app.services.like_service import add_like, remove_like
 
 

@@ -1,5 +1,6 @@
-import pytest
 from io import BytesIO
+
+import pytest
 from httpx import AsyncClient
 
 from app.db.models import User

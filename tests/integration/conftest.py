@@ -1,14 +1,14 @@
 import pytest
-
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+from app.db.database import Base, get_db_session
+from app.db.models import User
+from app.main import app
 
 # from sqlalchemy.exc import IntegrityError
 
-from app.main import app
-from app.db.database import Base, get_db_session
-from app.db.models import User
 
 
 @pytest.fixture(scope="session")

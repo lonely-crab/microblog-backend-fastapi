@@ -1,5 +1,6 @@
+from sqlalchemy import Column, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import Column, select, delete
+
 from app.db.models import Follower
 
 

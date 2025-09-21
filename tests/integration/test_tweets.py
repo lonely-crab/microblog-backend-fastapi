@@ -1,14 +1,15 @@
 import sys
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import User, Tweet, Like, Media, Follower
+from app.db.models import Follower, Like, Media, Tweet, User
 from app.schemas import CreateTweetRequest
-from app.services.tweet_service import create_tweet
 from app.services.follower_service import follow_user
 from app.services.like_service import add_like
+from app.services.tweet_service import create_tweet
 
 
 @pytest.mark.anyio

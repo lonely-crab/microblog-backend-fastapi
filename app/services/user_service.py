@@ -1,9 +1,10 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
+
 from sqlalchemy import Column, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.db.models import User, Follower
-from typing import Optional
+from app.db.models import Follower, User
 
 
 async def get_user_profile(

@@ -1,16 +1,15 @@
 import pytest
-
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.db.models import Follower, Like, Media, Tweet, User
 from app.services.tweet_service import (
     create_tweet,
     delete_tweet,
-    get_user_feed,
     format_tweet_for_response,
+    get_user_feed,
 )
-from app.db.models import Tweet, Media, Like, Follower, User
 
 
 @pytest.mark.anyio

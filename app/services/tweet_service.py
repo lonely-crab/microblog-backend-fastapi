@@ -1,10 +1,10 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, Column, func
-from sqlalchemy.orm import selectinload
-
 from typing import Any, Dict, List, Optional, Union
 
-from app.db.models import Media, Tweet, User, Like, Follower
+from sqlalchemy import Column, delete, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.db.models import Follower, Like, Media, Tweet, User
 from app.schemas import CreateTweetRequest
 
 

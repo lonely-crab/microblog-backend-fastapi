@@ -1,8 +1,7 @@
 import pytest
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import User, Follower, Tweet
+from app.db.models import Follower, Tweet, User
 from app.services.follower_service import follow_user, unfollow_user
 
 

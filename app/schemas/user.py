@@ -1,6 +1,6 @@
-from .base import BaseSchema
-
 from typing import List
+
+from .base import BaseSchema
 
 
 class UserShort(BaseSchema):

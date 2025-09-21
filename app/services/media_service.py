@@ -1,5 +1,5 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Column
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Media
 

@@ -1,9 +1,8 @@
+from typing import Dict, List
+
 from .base import BaseSchema
 from .tweet import TweetOut
 from .user import UserProfile
-
-
-from typing import List, Dict
 
 
 class FeedResponse(BaseSchema):

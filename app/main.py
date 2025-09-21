@@ -1,11 +1,12 @@
 import asyncio
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from app.api.v1 import tweets, media, users
-from app.db.database import engine
+from app.api.v1 import media, tweets, users
 from app.db import models
+from app.db.database import engine
 
 app = FastAPI(
     title="Microblog API",
