@@ -14,7 +14,7 @@ async def test_upload_media(client: AsyncClient, test_user_1):
     response = await client.post(
         "/api/medias",
         files={"file": ("test.jpg", file, "image/jpeg")},
-        headers={"api-key": test_user_1.api_key}
+        headers={"api-key": test_user_1.api_key},
     )
 
     assert response.status_code == 200
@@ -26,7 +26,9 @@ async def test_upload_media(client: AsyncClient, test_user_1):
 
 @pytest.mark.anyio
 async def test_upload_media_no_file(client: AsyncClient, test_user_1: User):
-    response = await client.post("/api/medias", headers={"api-key": str(test_user_1.api_key)})
+    response = await client.post(
+        "/api/medias", headers={"api-key": str(test_user_1.api_key)}
+    )
     assert response.status_code == 422  # FastAPI validation error
 
 
@@ -38,7 +40,7 @@ async def test_upload_media_empty_filename(client: AsyncClient, test_user_1: Use
     response = await client.post(
         "/api/medias",
         files={"file": ("empty.jpg", file, "image/jpeg")},
-        headers={"api-key": str(test_user_1.api_key)}
+        headers={"api-key": str(test_user_1.api_key)},
     )
     result = response.json().get("result")
     assert result is True
@@ -52,15 +54,15 @@ async def test_upload_media_forbidden_format(client: AsyncClient, test_user_1: U
     response = await client.post(
         "/api/medias",
         files={"file": ("empty.exe", file, "image/jpeg")},
-        headers={"api-key": str(test_user_1.api_key)}
+        headers={"api-key": str(test_user_1.api_key)},
     )
-    
+
     data = response.json()
     result = data.get("result")
     assert result is False
-    
+
     error_type = data.get("error_type")
     assert error_type == "FileUploadError"
 
     error_message = data.get("error_message")
-    assert error_message == "Unacceptable file format."    
+    assert error_message == "Unacceptable file format."

@@ -11,11 +11,21 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
     api_key = Column(String, nullable=False, unique=True)
-    
+
     tweets = relationship("Tweet", backref="author", cascade="all, delete-orphan")
     likes = relationship("Like", backref="user", cascade="all, delete-orphan")
-    followers = relationship("Follower", foreign_keys="Follower.following_id", backref="following", cascade="all, delete-orphan")
-    following = relationship("Follower", foreign_keys="Follower.follower_id", backref="follower", cascade="all, delete-orphan")
+    followers = relationship(
+        "Follower",
+        foreign_keys="Follower.following_id",
+        backref="following",
+        cascade="all, delete-orphan",
+    )
+    following = relationship(
+        "Follower",
+        foreign_keys="Follower.follower_id",
+        backref="follower",
+        cascade="all, delete-orphan",
+    )
 
 
 class Tweet(Base, TimestampMixin):
@@ -27,7 +37,7 @@ class Tweet(Base, TimestampMixin):
 
     media = relationship("Media", backref="tweet", cascade="all, delete-orphan")
     likes = relationship("Like", backref="tweet", cascade="all, delete-orphan")
-    
+
 
 class Media(Base):
     __tablename__ = "media"
@@ -39,7 +49,7 @@ class Media(Base):
 
 class Like(Base):
     __tablename__ = "likes"
-    
+
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     tweet_id = Column(Integer, ForeignKey("tweets.id"), primary_key=True)
 
@@ -50,4 +60,3 @@ class Follower(Base):
     follower_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     # are followed by user
     following_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-

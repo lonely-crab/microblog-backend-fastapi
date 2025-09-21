@@ -4,6 +4,7 @@ from .base import BaseSchema
 from .user import UserShort
 from .like import LikeOut
 
+
 class CreateTweetRequest(BaseSchema):
     tweet_data: str
     tweet_media_ids: List[int] | None = None

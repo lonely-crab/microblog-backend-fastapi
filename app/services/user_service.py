@@ -6,18 +6,27 @@ from app.db.models import User, Follower
 from typing import Optional
 
 
-async def get_user_profile(session: AsyncSession, target_user_id: Column[int] | int) -> Optional[dict]:
-    result = await session.execute(select(User).options(
-        selectinload(User.followers).selectinload(Follower.follower), # pyright: ignore[reportAttributeAccessIssue]
-        selectinload(User.following).selectinload(Follower.following) # pyright: ignore[reportAttributeAccessIssue]
-    ).where(User.id == target_user_id)
+async def get_user_profile(
+    session: AsyncSession, target_user_id: Column[int] | int
+) -> Optional[dict]:
+    result = await session.execute(
+        select(User)
+        .options(
+            selectinload(User.followers).selectinload(
+                Follower.follower
+            ),  # pyright: ignore[reportAttributeAccessIssue]
+            selectinload(User.following).selectinload(
+                Follower.following
+            ),  # pyright: ignore[reportAttributeAccessIssue]
+        )
+        .where(User.id == target_user_id)
     )
 
     user = result.scalar_one_or_none()
 
     if user is None:
         return None
-    
+
     return {
         "id": user.id,
         "name": user.name,
@@ -28,5 +37,5 @@ async def get_user_profile(session: AsyncSession, target_user_id: Column[int] | 
         "following": [
             {"id": follow.following.id, "name": follow.following.name}
             for follow in user.following
-        ]
+        ],
     }

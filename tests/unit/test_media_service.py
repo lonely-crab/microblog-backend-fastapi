@@ -19,6 +19,6 @@ async def test_upload_media(session: AsyncSession):
     assert media.file_path == file_path
     assert media.tweet_id is None
 
+
 # add media test for potentially bad files
 # + add function in security.py that avoids bad files like .exe etc.
- 

@@ -8,7 +8,9 @@ from app.services.user_service import get_user_profile
 
 @pytest.mark.anyio
 async def test_get_user_profile_found(session: AsyncSession, test_user_1: User):
-    user_profile = await get_user_profile(session=session, target_user_id=test_user_1.id)
+    user_profile = await get_user_profile(
+        session=session, target_user_id=test_user_1.id
+    )
 
     assert user_profile is not None
     assert user_profile.get("id") == test_user_1.id

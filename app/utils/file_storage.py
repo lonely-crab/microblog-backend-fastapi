@@ -10,14 +10,21 @@ async def save_upload_file(upload_file: UploadFile, dest_folder: str) -> str:
     """
 
     ext = os.path.splitext(upload_file.filename)[1] if upload_file.filename else ".bin"
-    acceptable_extensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".mov", ".bin"]
+    acceptable_extensions = [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp",
+        ".mp4",
+        ".mov",
+        ".bin",
+    ]
 
     if ext not in acceptable_extensions:
         raise ValueError("Unacceptable file format.")
 
     os.makedirs(dest_folder, exist_ok=True)
-
-
 
     file_name = f"{uuid.uuid4().hex}{ext}"
     file_path = os.path.join(dest_folder, file_name)

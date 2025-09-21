@@ -17,7 +17,9 @@ if DATABASE_URL is None:
 
 engine = create_async_engine(url=DATABASE_URL)
 
-async_session_maker = async_sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)
+async_session_maker = async_sessionmaker(
+    bind=engine, expire_on_commit=False, class_=AsyncSession
+)
 
 
 # create async session for FastAPI Depends module
@@ -31,6 +33,6 @@ class Base(DeclarativeBase):
     pass
 
 
-# mixin for timestamps 
+# mixin for timestamps
 class TimestampMixin:
     created_at = Column(DateTime, default=datetime.now(), nullable=False)
