@@ -46,7 +46,9 @@ async def startup_event():
             print(f"Attempt {attempt + 1}/{max_retries} failed: {e}")
             await asyncio.sleep(2)
     else:
-        raise Exception(f"Unable to connect to db after {max_retries} attempts.")
+        raise Exception(
+            f"Unable to connect to db after {max_retries} attempts."
+        )
 
     async with engine.begin() as conn:
         await conn.run_sync(models.Base.metadata.create_all)

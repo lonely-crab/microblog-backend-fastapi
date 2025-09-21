@@ -9,7 +9,8 @@ async def follow_user(
 ) -> bool:
     result = await session.execute(
         select(Follower).where(
-            Follower.follower_id == follower_id, Follower.following_id == following_id
+            Follower.follower_id == follower_id,
+            Follower.following_id == following_id,
         )
     )
 
@@ -27,9 +28,10 @@ async def follow_user(
 async def unfollow_user(
     session: AsyncSession, follower_id: Column[int], following_id: Column[int]
 ) -> bool:
-    result = await session.execute(
+    await session.execute(
         delete(Follower).where(
-            Follower.follower_id == follower_id, Follower.following_id == following_id
+            Follower.follower_id == follower_id,
+            Follower.following_id == following_id,
         )
     )
 

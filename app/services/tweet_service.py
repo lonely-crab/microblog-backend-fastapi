@@ -1,10 +1,10 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from sqlalchemy import Column, delete, func, select
+from sqlalchemy import Column, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.db.models import Follower, Like, Media, Tweet, User
+from app.db.models import Follower, Like, Media, Tweet
 from app.schemas import CreateTweetRequest
 
 
@@ -40,7 +40,9 @@ async def delete_tweet(
     session: AsyncSession, tweet_id: int, current_user_id: Column[int]
 ) -> bool:
     result = await session.execute(
-        select(Tweet).where(Tweet.id == tweet_id, Tweet.author_id == current_user_id)
+        select(Tweet).where(
+            Tweet.id == tweet_id, Tweet.author_id == current_user_id
+        )
     )
 
     tweet = result.scalar_one_or_none()
@@ -54,7 +56,9 @@ async def delete_tweet(
     return True
 
 
-async def get_user_feed(session: AsyncSession, user_id: Column[int]) -> List[dict]:
+async def get_user_feed(
+    session: AsyncSession, user_id: Column[int]
+) -> List[dict]:
     # users that are followed by our user
     following_subquery = select(Follower.following_id).where(
         Follower.follower_id == user_id
@@ -65,7 +69,9 @@ async def get_user_feed(session: AsyncSession, user_id: Column[int]) -> List[dic
         select(Tweet)
         .outerjoin(Like)
         .options(
-            selectinload(Tweet.author),  # pyright: ignore[reportAttributeAccessIssue]
+            selectinload(
+                Tweet.author
+            ),  # pyright: ignore[reportAttributeAccessIssue]
             selectinload(Tweet.media),
             selectinload(Tweet.likes).selectinload(
                 Like.user
@@ -89,9 +95,10 @@ def format_tweet_for_response(tweet: Tweet) -> Dict[str, Any]:
         "attachments": [media.file_path for media in tweet.media],
         "author": {
             "id": tweet.author_id,
-            "name": tweet.author.name,  # pyright: ignore[reportAttributeAccessIssue]
+            "name": tweet.author.name,
         },
         "likes": [
-            {"user_id": like.user.id, "name": like.user.name} for like in tweet.likes
+            {"user_id": like.user.id, "name": like.user.name}
+            for like in tweet.likes
         ],
     }

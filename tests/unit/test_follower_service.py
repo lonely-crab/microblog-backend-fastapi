@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Follower, Tweet, User
+from app.db.models import Follower, User
 from app.services.follower_service import follow_user, unfollow_user
 
 
@@ -10,12 +10,15 @@ async def test_follow_user_new(
     session: AsyncSession, test_user_1: User, test_user_2: User
 ):
     result = await follow_user(
-        session=session, follower_id=test_user_1.id, following_id=test_user_2.id
+        session=session,
+        follower_id=test_user_1.id,
+        following_id=test_user_2.id,
     )
     assert result is True
 
     follow = await session.get(
-        Follower, {"follower_id": test_user_1.id, "following_id": test_user_2.id}
+        Follower,
+        {"follower_id": test_user_1.id, "following_id": test_user_2.id},
     )
     assert follow is not None
 
@@ -29,7 +32,9 @@ async def test_follow_user_already_following(
     await session.commit()
 
     result = await follow_user(
-        session=session, follower_id=test_user_1.id, following_id=test_user_2.id
+        session=session,
+        follower_id=test_user_1.id,
+        following_id=test_user_2.id,
     )
     assert result is True
 
@@ -43,12 +48,15 @@ async def test_unfollow_user(
     await session.commit()
 
     result = await unfollow_user(
-        session=session, follower_id=test_user_1.id, following_id=test_user_2.id
+        session=session,
+        follower_id=test_user_1.id,
+        following_id=test_user_2.id,
     )
     assert result is True
 
     follow = await session.get(
-        Follower, {"follower_id": test_user_1.id, "following_id": test_user_2.id}
+        Follower,
+        {"follower_id": test_user_1.id, "following_id": test_user_2.id},
     )
     assert follow is None
 
@@ -58,6 +66,8 @@ async def test_unfollow_user_not_following(
     session: AsyncSession, test_user_1: User, test_user_2: User
 ):
     result = await unfollow_user(
-        session=session, follower_id=test_user_1.id, following_id=test_user_2.id
+        session=session,
+        follower_id=test_user_1.id,
+        following_id=test_user_2.id,
     )
     assert result is True

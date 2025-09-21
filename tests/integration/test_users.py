@@ -22,7 +22,8 @@ async def test_get_my_profile(client: AsyncClient, test_user_1: User):
 @pytest.mark.anyio
 async def test_get_user_profile(client: AsyncClient, test_user_1: User):
     response = await client.get(
-        f"/api/users/{test_user_1.id}", headers={"api-key": str(test_user_1.api_key)}
+        f"/api/users/{test_user_1.id}",
+        headers={"api-key": str(test_user_1.api_key)},
     )
     assert response.status_code == 200
     data = response.json()
@@ -60,13 +61,15 @@ async def test_like_tweet(client: AsyncClient, test_user_1: User):
     tweet_id = create_resp.json()["data"]["tweet_id"]
 
     like_resp = await client.post(
-        f"/api/tweets/{tweet_id}/likes", headers={"api-key": str(test_user_1.api_key)}
+        f"/api/tweets/{tweet_id}/likes",
+        headers={"api-key": str(test_user_1.api_key)},
     )
     assert like_resp.status_code == 200
     assert like_resp.json()["result"] is True
 
     unlike_resp = await client.delete(
-        f"/api/tweets/{tweet_id}/likes", headers={"api-key": str(test_user_1.api_key)}
+        f"/api/tweets/{tweet_id}/likes",
+        headers={"api-key": str(test_user_1.api_key)},
     )
     assert unlike_resp.status_code == 200
     assert unlike_resp.json()["result"] is True

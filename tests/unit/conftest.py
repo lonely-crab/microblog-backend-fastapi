@@ -1,5 +1,9 @@
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from app.db.database import Base
 from app.db.models import Media, Tweet, User
@@ -13,7 +17,9 @@ def anyio_backend():
 
 @pytest.fixture
 async def session():
-    engine = create_async_engine(url="sqlite+aiosqlite:///:memory:", echo=False)
+    engine = create_async_engine(
+        url="sqlite+aiosqlite:///:memory:", echo=False
+    )
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

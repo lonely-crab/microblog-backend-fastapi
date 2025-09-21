@@ -19,7 +19,9 @@ async def post_medias(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        file_path = await save_upload_file(upload_file=file, dest_folder="app/media")
+        file_path = await save_upload_file(
+            upload_file=file, dest_folder="app/media"
+        )
 
         media_id = await upload_media(session=session, file_path=file_path)
         return ApiResponse(result=True, data={"media_id": media_id})

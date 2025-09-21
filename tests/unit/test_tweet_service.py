@@ -3,18 +3,21 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.db.models import Follower, Like, Media, Tweet, User
+from app.db.models import Follower, Media, Tweet, User
 from app.services.tweet_service import (
     create_tweet,
     delete_tweet,
-    format_tweet_for_response,
     get_user_feed,
 )
 
 
 @pytest.mark.anyio
-async def test_create_tweet_without_media(session: AsyncSession, test_user_1: User):
-    request = type("Request", (), {"tweet_data": "test_string", "tweet_media_ids": []})
+async def test_create_tweet_without_media(
+    session: AsyncSession, test_user_1: User
+):
+    request = type(
+        "Request", (), {"tweet_data": "test_string", "tweet_media_ids": []}
+    )
 
     tweet_id = await create_tweet(
         session=session, request=request, author_id=test_user_1.id
@@ -45,7 +48,9 @@ async def test_create_tweet_with_media(
     assert tweet_id is not None
 
     result = await session.execute(
-        select(Tweet).options(selectinload(Tweet.media)).where(Tweet.id == tweet_id)
+        select(Tweet)
+        .options(selectinload(Tweet.media))
+        .where(Tweet.id == tweet_id)
     )
     tweet = result.scalar_one_or_none()
 
@@ -61,7 +66,9 @@ async def test_delete_tweet_success(
 ):
 
     result = await delete_tweet(
-        session=session, tweet_id=test_tweet_1.id, current_user_id=test_user_1.id
+        session=session,
+        tweet_id=test_tweet_1.id,
+        current_user_id=test_user_1.id,
     )
     assert result is True
 
@@ -71,10 +78,15 @@ async def test_delete_tweet_success(
 
 @pytest.mark.anyio
 async def test_delete_tweet_wrong_user(
-    session: AsyncSession, test_user_1: User, test_user_2: User, test_tweet_1: Tweet
+    session: AsyncSession,
+    test_user_1: User,
+    test_user_2: User,
+    test_tweet_1: Tweet,
 ):
     result = await delete_tweet(
-        session=session, tweet_id=test_tweet_1.id, current_user_id=test_user_2.id
+        session=session,
+        tweet_id=test_tweet_1.id,
+        current_user_id=test_user_2.id,
     )
     assert result is False
 
@@ -93,7 +105,10 @@ async def test_get_user_tweet_empty(session: AsyncSession, test_user_1: User):
 
 @pytest.mark.anyio
 async def test_get_user_feed_with_following(
-    session: AsyncSession, test_user_1: User, test_user_2: User, test_tweet_1: Tweet
+    session: AsyncSession,
+    test_user_1: User,
+    test_user_2: User,
+    test_tweet_1: Tweet,
 ):
     # subscribe user_2 on user_1
     follow = Follower(follower_id=test_user_2.id, following_id=test_user_1.id)

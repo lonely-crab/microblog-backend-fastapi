@@ -4,9 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import get_current_user
 from app.db.database import get_db_session
 from app.db.models import User
-from app.schemas import ApiResponse, CreateTweetRequest, FeedResponse
+from app.schemas import ApiResponse, CreateTweetRequest
 from app.services.like_service import add_like, remove_like
-from app.services.tweet_service import create_tweet, delete_tweet, get_user_feed
+from app.services.tweet_service import (
+    create_tweet,
+    delete_tweet,
+    get_user_feed,
+)
 
 router = APIRouter(prefix="/api", tags=["Tweets"])
 
@@ -24,7 +28,9 @@ async def post_tweets(
         )
         return ApiResponse(result=True, data={"tweet_id": tweet_id})
     except Exception as e:
-        return ApiResponse(result=False, error_type="TweetError", error_message=str(e))
+        return ApiResponse(
+            result=False, error_type="TweetError", error_message=str(e)
+        )
 
 
 @router.get("/tweets")
@@ -37,7 +43,9 @@ async def get_tweets(
         tweets = await get_user_feed(session=session, user_id=current_user.id)
         return ApiResponse(result=True, data={"tweets": tweets})
     except Exception as e:
-        return ApiResponse(result=False, error_type="ServerError", error_message=str(e))
+        return ApiResponse(
+            result=False, error_type="ServerError", error_message=str(e)
+        )
 
 
 @router.delete("/tweets/{tweet_id}", response_model=ApiResponse)
@@ -69,10 +77,14 @@ async def post_likes(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        await add_like(session=session, tweet_id=tweet_id, user_id=current_user.id)
+        await add_like(
+            session=session, tweet_id=tweet_id, user_id=current_user.id
+        )
         return ApiResponse(result=True)
     except Exception as e:
-        return ApiResponse(result=False, error_type="LikeError", error_message=str(e))
+        return ApiResponse(
+            result=False, error_type="LikeError", error_message=str(e)
+        )
 
 
 @router.delete("/tweets/{tweet_id}/likes", response_model=ApiResponse)
@@ -83,7 +95,11 @@ async def delete_likes(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        await remove_like(session=session, tweet_id=tweet_id, user_id=current_user.id)
+        await remove_like(
+            session=session, tweet_id=tweet_id, user_id=current_user.id
+        )
         return ApiResponse(result=True)
     except Exception as e:
-        return ApiResponse(result=False, error_type="UnlikeError", error_message=str(e))
+        return ApiResponse(
+            result=False, error_type="UnlikeError", error_message=str(e)
+        )

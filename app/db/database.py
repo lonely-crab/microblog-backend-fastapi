@@ -4,7 +4,11 @@ from typing import AsyncGenerator
 
 from dotenv import load_dotenv
 from sqlalchemy import Column, DateTime
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.orm import DeclarativeBase
 
 # load environment variables

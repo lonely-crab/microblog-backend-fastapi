@@ -11,7 +11,9 @@ class User(Base):
     name = Column(String, nullable=False)
     api_key = Column(String, nullable=False, unique=True)
 
-    tweets = relationship("Tweet", backref="author", cascade="all, delete-orphan")
+    tweets = relationship(
+        "Tweet", backref="author", cascade="all, delete-orphan"
+    )
     likes = relationship("Like", backref="user", cascade="all, delete-orphan")
     followers = relationship(
         "Follower",
@@ -34,7 +36,9 @@ class Tweet(Base, TimestampMixin):
     content = Column(Text, nullable=False)
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
-    media = relationship("Media", backref="tweet", cascade="all, delete-orphan")
+    media = relationship(
+        "Media", backref="tweet", cascade="all, delete-orphan"
+    )
     likes = relationship("Like", backref="tweet", cascade="all, delete-orphan")
 
 

@@ -34,7 +34,9 @@ async def test_upload_media_no_file(client: AsyncClient, test_user_1: User):
 
 
 @pytest.mark.anyio
-async def test_upload_media_empty_filename(client: AsyncClient, test_user_1: User):
+async def test_upload_media_empty_filename(
+    client: AsyncClient, test_user_1: User
+):
     file = BytesIO(b"")
     file.name = "empty.jpg"
 
@@ -48,7 +50,9 @@ async def test_upload_media_empty_filename(client: AsyncClient, test_user_1: Use
 
 
 @pytest.mark.anyio
-async def test_upload_media_forbidden_format(client: AsyncClient, test_user_1: User):
+async def test_upload_media_forbidden_format(
+    client: AsyncClient, test_user_1: User
+):
     file = BytesIO(b"")
     file.name = "empty.exe"
 

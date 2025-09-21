@@ -10,7 +10,11 @@ async def save_upload_file(upload_file: UploadFile, dest_folder: str) -> str:
     Returns relative path to file (e.g. /media/abc.jpg)
     """
 
-    ext = os.path.splitext(upload_file.filename)[1] if upload_file.filename else ".bin"
+    ext = (
+        os.path.splitext(upload_file.filename)[1]
+        if upload_file.filename
+        else ".bin"
+    )
     acceptable_extensions = [
         ".jpg",
         ".jpeg",

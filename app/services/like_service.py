@@ -25,7 +25,7 @@ async def add_like(
 async def remove_like(
     session: AsyncSession, tweet_id: int, user_id: Column[int]
 ) -> bool:
-    result = await session.execute(
+    await session.execute(
         delete(Like).where(Like.tweet_id == tweet_id, Like.user_id == user_id)
     )
 

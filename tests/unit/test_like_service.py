@@ -38,7 +38,9 @@ async def test_add_like_already_exists(
 async def test_remove_like_exists(
     session: AsyncSession, test_user_1: User, test_tweet_1: Tweet
 ):
-    await add_like(session=session, tweet_id=test_tweet_1.id, user_id=test_user_1.id)
+    await add_like(
+        session=session, tweet_id=test_tweet_1.id, user_id=test_user_1.id
+    )
 
     result = await remove_like(
         session=session, tweet_id=test_tweet_1.id, user_id=test_user_1.id
