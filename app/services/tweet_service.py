@@ -14,11 +14,11 @@ async def create_tweet(
     media_objs = None
 
     if request.tweet_media_ids:
-        media_objs = await session.execute(
+        media_objects = await session.execute(
             select(Media).where(Media.id.in_(request.tweet_media_ids))
         )
 
-        media_objs = media_objs.scalars().all()
+        media_objs = media_objects.scalars().all()
 
     if request.tweet_data == "" or request.tweet_data is None:
         raise ValueError("Tweet text cannot be empty.")
@@ -69,13 +69,9 @@ async def get_user_feed(
         select(Tweet)
         .outerjoin(Like)
         .options(
-            selectinload(
-                Tweet.author
-            ),  # pyright: ignore[reportAttributeAccessIssue]
+            selectinload(Tweet.author),  # type: ignore
             selectinload(Tweet.media),
-            selectinload(Tweet.likes).selectinload(
-                Like.user
-            ),  # pyright: ignore[reportAttributeAccessIssue]
+            selectinload(Tweet.likes).selectinload(Like.user),  # type: ignore
         )
         .where(Tweet.author_id.in_(following_subquery))
         .order_by(func.count(Like.tweet_id).desc())
@@ -95,7 +91,7 @@ def format_tweet_for_response(tweet: Tweet) -> Dict[str, Any]:
         "attachments": [media.file_path for media in tweet.media],
         "author": {
             "id": tweet.author_id,
-            "name": tweet.author.name,
+            "name": tweet.author.name,  # type: ignore
         },
         "likes": [
             {"user_id": like.user.id, "name": like.user.name}

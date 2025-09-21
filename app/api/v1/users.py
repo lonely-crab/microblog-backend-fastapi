@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Header
+from sqlalchemy import Column
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import get_current_user
@@ -52,12 +53,12 @@ async def get_user_profile_by_id(
 
 @router.post("/users/{user_id}/follow", response_model=ApiResponse)
 async def post_follow_user(
-    user_id: int,
+    user_id: Column[int] | int,
     api_key: str = Header(...),
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.id == user_id:
+    if int(current_user.id) == user_id:
         return ApiResponse(
             result=False,
             error_type="FollowError",

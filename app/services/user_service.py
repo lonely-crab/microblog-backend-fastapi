@@ -14,11 +14,11 @@ async def get_user_profile(
         select(User)
         .options(
             selectinload(User.followers).selectinload(
-                Follower.follower
-            ),  # pyright: ignore[reportAttributeAccessIssue]
+                Follower.follower  # type: ignore
+            ),
             selectinload(User.following).selectinload(
-                Follower.following
-            ),  # pyright: ignore[reportAttributeAccessIssue]
+                Follower.following  # type: ignore
+            ),
         )
         .where(User.id == target_user_id)
     )

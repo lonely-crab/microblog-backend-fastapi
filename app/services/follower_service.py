@@ -5,7 +5,9 @@ from app.db.models import Follower
 
 
 async def follow_user(
-    session: AsyncSession, follower_id: Column[int], following_id: Column[int]
+    session: AsyncSession,
+    follower_id: Column[int],
+    following_id: Column[int] | int,
 ) -> bool:
     result = await session.execute(
         select(Follower).where(
@@ -26,7 +28,9 @@ async def follow_user(
 
 
 async def unfollow_user(
-    session: AsyncSession, follower_id: Column[int], following_id: Column[int]
+    session: AsyncSession,
+    follower_id: Column[int],
+    following_id: Column[int] | int,
 ) -> bool:
     await session.execute(
         delete(Follower).where(
