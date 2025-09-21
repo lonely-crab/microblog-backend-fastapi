@@ -4,3 +4,4 @@
 __pycache__/
 temp.py
 .mypy_cache
+app/media/
