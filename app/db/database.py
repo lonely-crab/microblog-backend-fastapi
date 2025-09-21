@@ -16,10 +16,10 @@ load_dotenv()
 
 DATABASE_URL = getenv("DATABASE_URL")
 
-if DATABASE_URL is None:
-    raise ValueError("DATABASE_URL is not set in .env file.")
+if DATABASE_URL is None and getenv("TESTING") != "1":
+        raise ValueError("DATABASE_URL is not set in .env file.")
 
-engine = create_async_engine(url=DATABASE_URL)
+engine = create_async_engine(url=DATABASE_URL) # type: ignore
 
 async_session_maker = async_sessionmaker(
     bind=engine, expire_on_commit=False, class_=AsyncSession
