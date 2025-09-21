@@ -7,9 +7,6 @@ from app.db.database import Base, get_db_session
 from app.db.models import User
 from app.main import app
 
-# from sqlalchemy.exc import IntegrityError
-
-
 
 @pytest.fixture(scope="session")
 def anyio_backend():
