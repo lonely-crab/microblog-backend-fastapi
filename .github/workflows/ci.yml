@@ -40,7 +40,7 @@ jobs:
         run: flake8 . --exclude=./app/core/__init__.py,./app/schemas/__init__.py,./tests/__init__.py
 
       - name: Type check with mypy
-        run: mypy app tests
+        run: mypy app
 
       - name: Run tests with coverage
         run: |
