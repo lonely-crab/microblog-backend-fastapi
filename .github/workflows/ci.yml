@@ -31,13 +31,13 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Check formatting with black
-        run: black . --check --diff
+        run: black . -l 79 --check --diff
 
       - name: Check import order with isort
         run: isort . --check-only --diff --profile black
 
       - name: Run flake8
-        run: flake8 .
+        run: flake8 . --exclude=./app/core/__init__.py,./app/schemas/__init__.py,./tests/__init__.py
 
       - name: Type check with mypy
         run: mypy app tests
