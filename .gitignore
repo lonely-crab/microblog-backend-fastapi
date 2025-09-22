@@ -1,2 +1,7 @@
 /.idea/
 .DS_Store
+.env
+__pycache__/
+temp.py
+.mypy_cache
+app/media/
