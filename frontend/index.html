@@ -25,8 +25,13 @@
   <button onclick="loadFeed()">Обновить ленту</button>
   <div id="feed"></div>
 
+  <h2>Профиль пользователя</h2>
+  <input id="profileId" placeholder="Введите ID пользователя">
+  <button onclick="loadProfile()">Показать профиль</button>
+  <div id="profile"></div>
+
   <script>
-  const API_BASE = "http://backend:8000/api";
+  const API_BASE = "/api";
 
   function getApiKey() {
     return localStorage.getItem("apiKey") || "";
@@ -216,6 +221,89 @@
     console.log("UNFOLLOW RESPONSE:", data);
     alert(JSON.stringify(data));
   }
+
+  // ============= PROFILES =============
+  async function loadMyProfile() {
+    const apiKey = getApiKey();
+    const res = await fetch(`${API_BASE}/users/me`, {
+      headers: { "api-key": apiKey }
+    });
+    const data = await res.json();
+    console.log("MY PROFILE RESPONSE:", data);
+    if (data.result && data.data && data.data.user) {
+      renderProfile(data.data.user);
+    } else {
+      renderProfile(null);
+    }
+  }
+
+  async function loadProfile() {
+    const apiKey = getApiKey();
+    const id = document.getElementById("profileId").value.trim();
+    
+    if (!id) {
+      alert("Введите ID пользователя");
+      return;
+    }
+
+    const res = await fetch(`${API_BASE}/users/${id}`, {
+      headers: { "api-key": apiKey }
+    });
+    const data = await res.json();
+    console.log(`PROFILE RESPONSE (id=${id}):`, data);
+
+    if (data.result && data.data && data.data.user) {
+      renderProfile(data.data.user);
+    } else {
+      renderProfile(null);
+    }
+  }
+
+  function renderProfile(user) {
+    const div = document.getElementById("profile");
+    if (!user) {
+      div.innerHTML = "<p>Пользователь не найден</p>";
+      return;
+    }
+    const followers = user.followers.map(f => `${f.name} (id:${f.id})`).join(", ");
+    const following = user.following.map(f => `${f.name} (id:${f.id})`).join(", ");
+    div.innerHTML = `
+      <div class="user-card">
+        <p><b>${user.name}</b> (id: ${user.id})</p>
+        <p>Подписчики: ${followers || "-"}</p>
+        <p>Подписки: ${following || "-"}</p>
+        <input id="followId" placeholder="id для (ан)фолловинга">
+        <button onclick="followUser()">Фолловинг</button>
+        <button onclick="unfollowUser()">Анфолловинг</button>
+      </div>
+    `;
+  }
+
+  // ============= FOLLOW =============
+  async function followUser() {
+    const apiKey = getApiKey();
+    const id = document.getElementById("followId").value;
+    const res = await fetch(`${API_BASE}/users/${id}/follow`, {
+      method: "POST",
+      headers: { "api-key": apiKey }
+    });
+    const data = await res.json();
+    console.log("FOLLOW RESPONSE:", data);
+    alert(JSON.stringify(data));
+  }
+
+  async function unfollowUser() {
+    const apiKey = getApiKey();
+    const id = document.getElementById("followId").value;
+    const res = await fetch(`${API_BASE}/users/${id}/unfollow`, {
+      method: "DELETE",
+      headers: { "api-key": apiKey }
+    });
+    const data = await res.json();
+    console.log("UNFOLLOW RESPONSE:", data);
+    alert(JSON.stringify(data));
+  }
+
 </script>
 
 </body>
