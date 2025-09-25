@@ -1,7 +1,6 @@
 import asyncio
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.api.v1 import media, tweets, users
