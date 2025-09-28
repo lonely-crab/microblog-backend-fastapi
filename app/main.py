@@ -1,10 +1,13 @@
+"""
+Точка входа в приложение FastAPI.
+"""
+
 import asyncio
 
 from fastapi import FastAPI
 from sqlalchemy import text
 
 from app.api.v1 import media, tweets, users
-from app.db import models
 from app.db.database import engine
 
 app = FastAPI(
@@ -25,6 +28,14 @@ app.include_router(users.router)
 # adding tables on startup
 @app.on_event("startup")
 async def startup_event():
+    """
+    Выполняется при старте приложения.
+
+    - Ждёт готовности PostgreSQL
+
+    Raises:
+        Exception: Если не удалось подключиться к БД за 15 попыток
+    """
     max_retries = 15
     for attempt in range(max_retries):
         try:
@@ -39,6 +50,3 @@ async def startup_event():
         raise Exception(
             f"Unable to connect to db after {max_retries} attempts."
         )
-
-    async with engine.begin() as conn:
-        await conn.run_sync(models.Base.metadata.create_all)

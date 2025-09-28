@@ -40,6 +40,12 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
+      - name: Apply database migrations
+        run: |
+          alembic upgrade head
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          
       - name: Check formatting with black
         run: black . -l 79 --check --diff
 
@@ -47,7 +53,7 @@ jobs:
         run: isort . --check-only --diff --profile black
 
       - name: Run flake8
-        run: flake8 . --exclude=./app/core/__init__.py,./app/schemas/__init__.py,./tests/__init__.py
+        run: flake8 . --exclude=./app/core/__init__.py,./app/schemas/__init__.py,./tests/__init__.py,./alembic/*
 
       - name: Type check with mypy
         run: mypy app
