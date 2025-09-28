@@ -46,6 +46,21 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
       
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U ${{ secrets.POSTGRES_USER }}; then
+              echo "PostgreSQL is ready!"
+              exit 0
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+          echo "Failed to connect to PostgreSQL."
+          exit 1
+        env:
+          PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      
       - name: Apply database migrations
         run: |
           alembic upgrade head
