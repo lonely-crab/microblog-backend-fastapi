@@ -1,3 +1,7 @@
+"""
+Утилиты для сохранения загружаемых файлов.
+"""
+
 import os
 import uuid
 
@@ -6,8 +10,24 @@ from fastapi import UploadFile
 
 async def save_upload_file(upload_file: UploadFile, dest_folder: str) -> str:
     """
-    Save file to dest_folder.
-    Returns relative path to file (e.g. /media/abc.jpg)
+    Сохраняет загруженный файл на диск и возвращает относительный путь.
+
+    Генерирует уникальное имя файла, чтобы избежать коллизий.
+
+    Args:
+        upload_file: Загруженный файл
+        dest_folder: Папка для сохранения (например, "app/media")
+
+    Returns:
+        Относительный URL к файлу (например, `/media/abc.jpg`)
+
+    Raises:
+        ValueError: Если расширение файла недопустимо
+
+    Example:
+        >>> path = await save_upload_file(file, "app/media")
+        >>> print(path)
+        /media/abc.jpg
     """
 
     ext = (

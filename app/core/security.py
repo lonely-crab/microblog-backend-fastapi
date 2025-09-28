@@ -1,3 +1,7 @@
+"""
+Модуль аутентификации через API-ключ.
+"""
+
 from typing import Optional
 
 from fastapi import Depends, Header, HTTPException
@@ -12,7 +16,24 @@ async def get_current_user(
     api_key: str = Header(...), session: AsyncSession = Depends(get_db_session)
 ) -> Optional[User]:
     """
-    Authentification function for users via API key.
+    Получает текущего пользователя по API-ключу.
+
+    Функция используется как зависимость во всех защищённых роутах.
+
+    Args:
+        api_key: API-ключ из заголовка запроса
+        session: Асинхронная сессия БД
+
+    Returns:
+        Объект пользователя, если ключ валиден
+
+    Raises:
+        HTTPException(403): Если ключ недействителен
+
+    Example:
+        >>> @router.get("/users/me")
+        >>> async def me(user: User = Depends(get_current_user)):
+        >>>     return user
     """
     result = await session.execute(select(User).where(User.api_key == api_key))
     user = result.scalar_one_or_none()

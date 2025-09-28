@@ -1,3 +1,7 @@
+"""
+Сервис для работы с подписками между пользователями.
+"""
+
 from sqlalchemy import Column, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,6 +13,23 @@ async def follow_user(
     follower_id: Column[int],
     following_id: Column[int] | int,
 ) -> bool:
+    """
+    Подписывает одного пользователя на другого.
+
+    Если подписка уже существует — ничего не делает (идемпотентность).
+
+    Args:
+        session: Асинхронная сессия БД
+        follower_id: ID пользователя, который подписывается
+        following_id: ID пользователя, на которого подписываются
+
+    Returns:
+        True в случае успеха
+
+    Example:
+        >>> await follow_user(session, 1, 2)
+        True
+    """
     result = await session.execute(
         select(Follower).where(
             Follower.follower_id == follower_id,
@@ -32,6 +53,23 @@ async def unfollow_user(
     follower_id: Column[int],
     following_id: Column[int] | int,
 ) -> bool:
+    """
+    Отписывает пользователя от другого.
+
+    Если подписки не было — ничего не делает (идемпотентность).
+
+    Args:
+        session: Асинхронная сессия БД
+        follower_id: ID пользователя, который отписывается
+        following_id: ID пользователя, от которого отписываются
+
+    Returns:
+        True в случае успеха
+
+    Example:
+        >>> await unfollow_user(session, 1, 2)
+        True
+    """
     await session.execute(
         delete(Follower).where(
             Follower.follower_id == follower_id,

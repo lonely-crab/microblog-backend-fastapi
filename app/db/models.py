@@ -1,3 +1,7 @@
+"""
+ORM-модели приложения: User, Tweet, Media, Like, Follower.
+"""
+
 from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
@@ -5,6 +9,12 @@ from .database import Base, TimestampMixin
 
 
 class User(Base):
+    """
+    Модель пользователя.
+
+    Пользователь может создавать твиты, ставить лайки, иметь подписчиков.
+    """
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -30,6 +40,12 @@ class User(Base):
 
 
 class Tweet(Base, TimestampMixin):
+    """
+    Модель твита.
+
+    Твит содержит текст, ссылку на автора, медиа и лайки.
+    """
+
     __tablename__ = "tweets"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -43,6 +59,12 @@ class Tweet(Base, TimestampMixin):
 
 
 class Media(Base):
+    """
+    Модель медиафайла (например, изображения).
+
+    Связана с твитом через внешний ключ.
+    """
+
     __tablename__ = "media"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -51,6 +73,12 @@ class Media(Base):
 
 
 class Like(Base):
+    """
+    Модель лайка.
+
+    Составной первичный ключ: (user_id, tweet_id).
+    """
+
     __tablename__ = "likes"
 
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
@@ -58,8 +86,14 @@ class Like(Base):
 
 
 class Follower(Base):
+    """
+    Модель подписки.
+
+    Составной первичный ключ: (follower_id, following_id).
+    """
+
     __tablename__ = "followers"
-    # user that follows
+    # Пользователь, который подписывается
     follower_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    # are followed by user
+    # Пользователь, на которого подписываются
     following_id = Column(Integer, ForeignKey("users.id"), primary_key=True)

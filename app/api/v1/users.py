@@ -1,3 +1,7 @@
+"""
+Маршруты для работы с профилями пользователей и подписками.
+"""
+
 from fastapi import APIRouter, Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,6 +21,21 @@ async def get_my_user_profile(
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Возвращает профиль текущего авторизованного пользователя.
+
+    Args:
+        api_key: API-ключ пользователя
+        session: Асинхронная сессия БД
+        current_user: Авторизованный пользователь
+
+    Returns:
+        JSON-ответ с данными профиля
+
+    Example:
+        >>> GET /api/users/me
+        >>> Response: {"result": true, "data": {"user": {...}}}
+    """
     profile = await get_user_profile(
         session=session, target_user_id=current_user.id
     )
@@ -38,6 +57,22 @@ async def get_user_profile_by_id(
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Возвращает профиль пользователя по его ID.
+
+    Args:
+        user_id: ID запрашиваемого пользователя
+        api_key: API-ключ текущего пользователя
+        session: Асинхронная сессия БД
+        current_user: Авторизованный пользователь
+
+    Returns:
+        JSON-ответ с данными профиля
+
+    Example:
+        >>> GET /api/users/2
+        >>> Response: {"result": true, "data": {"user": {...}}}
+    """
     profile = await get_user_profile(session=session, target_user_id=user_id)
 
     if profile is None:
@@ -57,6 +92,21 @@ async def post_follow_user(
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Подписывает текущего пользователя на другого.
+
+    Args:
+        user_id: ID пользователя, на которого подписываются
+        api_key: API-ключ текущего пользователя
+        session: Асинхронная сессия БД
+        current_user: Авторизованный пользователь
+
+    Returns:
+        JSON-ответ с результатом операции
+
+    Raises:
+        FollowError: Если пользователь пытается подписаться на себя
+    """
     if int(current_user.id) == user_id:
         return ApiResponse(
             result=False,
@@ -83,6 +133,18 @@ async def delete_unfollow_user(
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Отписывает текущего пользователя от другого.
+
+    Args:
+        user_id: ID пользователя, от которого отписываются
+        api_key: API-ключ текущего пользователя
+        session: Асинхронная сессия БД
+        current_user: Авторизованный пользователь
+
+    Returns:
+        JSON-ответ с результатом операции
+    """
     try:
         await unfollow_user(
             session=session, follower_id=current_user.id, following_id=user_id

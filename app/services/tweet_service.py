@@ -1,3 +1,7 @@
+"""
+Сервис для работы с твитами: создание, удаление, получение ленты.
+"""
+
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import Column, func, select
@@ -11,6 +15,25 @@ from app.schemas import CreateTweetRequest
 async def create_tweet(
     session: AsyncSession, request: CreateTweetRequest, author_id: Column[int]
 ) -> Optional[Column[int]]:
+    """
+    Создаёт новый твит с текстом и прикреплёнными медиа.
+
+    Args:
+        session: Асинхронная сессия БД
+        request: Данные твита (текст и ID медиа)
+        author_id: ID автора твита
+
+    Returns:
+        ID созданного твита
+
+    Raises:
+        ValueError: Если текст твита пустой
+
+    Example:
+        >>> tweet_id = await create_tweet(session, request, 1)
+        >>> print(tweet_id)
+        7
+    """
     media_objs = None
 
     if request.tweet_media_ids:
@@ -39,6 +62,22 @@ async def create_tweet(
 async def delete_tweet(
     session: AsyncSession, tweet_id: int, current_user_id: Column[int]
 ) -> bool:
+    """
+    Удаляет твит, если он принадлежит указанному пользователю.
+
+    Args:
+        session: Асинхронная сессия БД
+        tweet_id: ID удаляемого твита
+        current_user_id: ID пользователя (должен быть автором)
+
+    Returns:
+        True, если твит был найден и удалён, иначе False
+
+    Example:
+        >>> success = await delete_tweet(session, 5, 1)
+        >>> print(success)
+        True
+    """
     result = await session.execute(
         select(Tweet).where(
             Tweet.id == tweet_id, Tweet.author_id == current_user_id
@@ -59,6 +98,24 @@ async def delete_tweet(
 async def get_user_feed(
     session: AsyncSession, user_id: Column[int]
 ) -> List[dict]:
+    """
+    Возвращает ленту твитов для пользователя, отсортированную по популярности.
+
+    Лента включает твиты от пользователей, на которых подписан текущий
+    пользователь.
+
+    Args:
+        session: Асинхронная сессия БД
+        user_id: ID пользователя, для которого формируется лента
+
+    Returns:
+        Список твитов в формате, готовом к JSON-сериализации
+
+    Example:
+        >>> feed = await get_user_feed(session, 1)
+        >>> len(feed)
+        3
+    """
     # users that are followed by our user
     following_subquery = select(Follower.following_id).where(
         Follower.follower_id == user_id
@@ -84,7 +141,20 @@ async def get_user_feed(
 
 
 def format_tweet_for_response(tweet: Tweet) -> Dict[str, Any]:
+    """
+    Преобразует ORM-объект твита в словарь для JSON-ответа.
 
+    Args:
+        tweet: Объект Tweet из SQLAlchemy
+
+    Returns:
+        Словарь с полями: id, content, attachments, author, likes
+
+    Example:
+        >>> data = format_tweet_for_response(tweet)
+        >>> print(data["content"])
+        "Hello world"
+    """
     return {
         "id": tweet.id,
         "content": tweet.content,

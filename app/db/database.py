@@ -1,3 +1,7 @@
+"""
+Конфигурация базы данных: движок, сессия, базовый класс моделей.
+"""
+
 from datetime import datetime
 from os import getenv
 from typing import AsyncGenerator
@@ -11,7 +15,6 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 
-# load environment variables
 load_dotenv()
 
 DATABASE_URL = getenv("DATABASE_URL")
@@ -26,17 +29,32 @@ async_session_maker = async_sessionmaker(
 )
 
 
-# create async session for FastAPI Depends module
 async def get_db_session() -> AsyncGenerator[AsyncSession]:
+    """
+    Генератор сессии для использования в FastAPI (Depends).
+
+    Контекстный менеджер автоматически закрывает сессию.
+
+    Yields:
+        Асинхронная сессия SQLAlchemy
+
+    Example:
+        >>> async def my_func(db: AsyncSession = Depends(get_db_session)):
+        >>>     ...
+    """
     async with async_session_maker() as session:
         yield session
 
 
-# base class for all models
 class Base(DeclarativeBase):
+    """Базовый класс для всех ORM-моделей."""
+
     pass
 
 
-# mixin for timestamps
 class TimestampMixin:
+    """
+    Миксин для добавления поля created_at к нужным моделям.
+    """
+
     created_at = Column(DateTime, default=datetime.now(), nullable=False)

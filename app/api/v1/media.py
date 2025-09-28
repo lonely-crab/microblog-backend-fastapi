@@ -1,3 +1,7 @@
+"""
+Маршруты для загрузки медиафайлов.
+"""
+
 from fastapi import APIRouter, Depends, Header, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,6 +22,27 @@ async def post_medias(
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Загружает медиафайл на сервер и сохраняет его путь в базе данных.
+
+    Args:
+        file: Загружаемый файл (изображение)
+        api_key: API-ключ пользователя (в заголовке)
+        session: Асинхронная сессия SQLAlchemy
+        current_user: Объект текущего пользователя (авторизован)
+
+    Returns:
+        JSON-ответ с результатом и media_id в случае успеха
+
+    Example:
+        >>> POST /api/medias
+        >>> Headers: {"api-key": "test123"}
+        >>> Body: form-data with file
+        >>> Response: {"result": true, "data": {"media_id": 5}}
+
+    Raises:
+        Exception: Если произошла ошибка при сохранении файла
+    """
     try:
         file_path = await save_upload_file(
             upload_file=file, dest_folder="app/media"
