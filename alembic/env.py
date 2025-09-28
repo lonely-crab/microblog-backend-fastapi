@@ -6,7 +6,7 @@ from sqlalchemy import engine_from_config, pool
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from alembic import context
-from app.db.database import Base
+from app.db.models import Base
 
 sys.path.append(str(Path(__file__).parent.parent))
 
