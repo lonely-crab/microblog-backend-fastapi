@@ -5,12 +5,15 @@
 from fastapi import APIRouter, Depends, Header, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.logging import get_logger
 from app.core.security import get_current_user
 from app.db.database import get_db_session
 from app.db.models import User
 from app.schemas.response import ApiResponse
 from app.services.media_service import upload_media
 from app.utils.file_storage import save_upload_file
+
+logger = get_logger("media_api")
 
 router = APIRouter(prefix="/api", tags=["Media"])
 
@@ -43,14 +46,32 @@ async def post_medias(
     Raises:
         Exception: Если произошла ошибка при сохранении файла
     """
+    logger.info(
+        f"POST /medias from user {current_user.id}, filename={file.filename}"
+    )
+
     try:
         file_path = await save_upload_file(
             upload_file=file, dest_folder="app/media"
         )
+        logger.debug(f"File saved at {file_path}")
+
+        if not file_path:
+            logger.exception("File path is empty after saving the file.")
+            raise ValueError("File path is empty after saving the file.")
 
         media_id = await upload_media(session=session, file_path=file_path)
+        logger.info(
+            f"Media uploaded successfully: id={media_id}, \
+            user={current_user.id}"
+        )
+
         return ApiResponse(result=True, data={"media_id": media_id})
     except Exception as e:
+        logger.error(
+            f"Failed to upload media for user {current_user.id}: {str(e)}"
+        )
+
         return ApiResponse(
             result=False, error_type="FileUploadError", error_message=str(e)
         )

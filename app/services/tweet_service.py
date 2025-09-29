@@ -8,8 +8,11 @@ from sqlalchemy import Column, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.logging import get_logger
 from app.db.models import Follower, Like, Media, Tweet
 from app.schemas import CreateTweetRequest
+
+logger = get_logger("tweet_service")
 
 
 async def create_tweet(
@@ -34,6 +37,11 @@ async def create_tweet(
         >>> print(tweet_id)
         7
     """
+    logger.info(
+        f"Creating tweet for user {author_id}, \
+        text='{request.tweet_data[:min(len(request.tweet_data), 10)]}...'"
+    )
+
     media_objs = None
 
     if request.tweet_media_ids:
@@ -43,7 +51,9 @@ async def create_tweet(
 
         media_objs = media_objects.scalars().all()
 
-    if request.tweet_data == "" or request.tweet_data is None:
+    if request.tweet_data.strip() == "" or request.tweet_data is None:
+        logger.error("Attempt to create tweet with empty text")
+
         raise ValueError("Tweet text cannot be empty.")
 
     tweet = Tweet(author_id=author_id, content=request.tweet_data)
@@ -55,8 +65,16 @@ async def create_tweet(
             media_obj.tweet_id = tweet.id
         session.add_all(media_objs)
 
-    await session.commit()
-    return tweet.id
+    try:
+        await session.commit()
+        logger.info(
+            f"Tweet created successfully: id={tweet.id}, user={author_id}"
+        )
+
+        return tweet.id
+    except Exception as e:
+        logger.exception(f"Failed to create tweet for user {author_id} : {e}")
+        raise
 
 
 async def delete_tweet(
@@ -78,6 +96,8 @@ async def delete_tweet(
         >>> print(success)
         True
     """
+    logger.info(f"User {current_user_id} is trying to delete tweet {tweet_id}")
+
     result = await session.execute(
         select(Tweet).where(
             Tweet.id == tweet_id, Tweet.author_id == current_user_id
@@ -87,12 +107,23 @@ async def delete_tweet(
     tweet = result.scalar_one_or_none()
 
     if tweet is None:
+        logger.warning(
+            f"User {current_user_id} tried to delete non-existent or \
+            unauthorized tweet {tweet_id}"
+        )
+
         return False
 
     await session.delete(tweet)
-    await session.commit()
+    try:
+        await session.commit()
+        logger.info(f"Tweet {tweet_id} deleted by user {current_user_id}")
 
-    return True
+        return True
+    except Exception as e:
+        logger.exception(f"Failed to delete tweet {tweet_id}: {e}")
+
+        return False
 
 
 async def get_user_feed(
@@ -116,28 +147,37 @@ async def get_user_feed(
         >>> len(feed)
         3
     """
-    # users that are followed by our user
+    logger.info(f"Loading feed for user {user_id}")
+
     following_subquery = select(Follower.following_id).where(
         Follower.follower_id == user_id
     )
 
-    # get all tweets + join author, media and likes
-    result = await session.execute(
-        select(Tweet)
-        .outerjoin(Like)
-        .options(
-            selectinload(Tweet.author),  # type: ignore
-            selectinload(Tweet.media),
-            selectinload(Tweet.likes).selectinload(Like.user),  # type: ignore
+    try:
+        result = await session.execute(
+            select(Tweet)
+            .outerjoin(Like)
+            .options(
+                selectinload(Tweet.author),  # type: ignore
+                selectinload(Tweet.media),
+                selectinload(Tweet.likes).selectinload(
+                    Like.user  # type: ignore
+                ),
+            )
+            .where(Tweet.author_id.in_(following_subquery))
+            .order_by(func.count(Like.tweet_id).desc())
+            .group_by(Tweet.id)
         )
-        .where(Tweet.author_id.in_(following_subquery))
-        .order_by(func.count(Like.tweet_id).desc())
-        .group_by(Tweet.id)
-    )
 
-    tweets = result.scalars().all()
+        tweets = result.scalars().all()
+        logger.debug(f"Loaded {len(tweets)} tweets for user {user_id}")
 
-    return [format_tweet_for_response(tweet=tweet) for tweet in tweets]
+        return [format_tweet_for_response(tweet=tweet) for tweet in tweets]
+
+    except Exception as e:
+        logger.exception(f"Failed to load feed for user {user_id}: {e}")
+
+        return []
 
 
 def format_tweet_for_response(tweet: Tweet) -> Dict[str, Any]:

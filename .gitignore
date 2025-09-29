@@ -6,3 +6,4 @@ temp.py
 .mypy_cache
 app/media/
 linters.sh
+collect_files.sh

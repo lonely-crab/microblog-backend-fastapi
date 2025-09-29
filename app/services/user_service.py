@@ -8,7 +8,10 @@ from sqlalchemy import Column, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.logging import get_logger
 from app.db.models import Follower, User
+
+logger = get_logger("user_service")
 
 
 async def get_user_profile(
@@ -31,6 +34,8 @@ async def get_user_profile(
         >>> print(profile["name"])
         "Alice"
     """
+    logger.info(f"Fetching profile for user {target_user_id}")
+
     result = await session.execute(
         select(User)
         .options(
@@ -47,17 +52,27 @@ async def get_user_profile(
     user = result.scalar_one_or_none()
 
     if user is None:
+        logger.warning(f"Profile not found for user {target_user_id}")
         return None
 
-    return {
+    followers = [
+        {"id": follow.follower.id, "name": follow.follower.name}
+        for follow in user.followers
+    ]
+    following = [
+        {"id": follow.following.id, "name": follow.following.name}
+        for follow in user.following
+    ]
+
+    profile = {
         "id": user.id,
         "name": user.name,
-        "followers": [
-            {"id": follow.follower.id, "name": follow.follower.name}
-            for follow in user.followers
-        ],
-        "following": [
-            {"id": follow.following.id, "name": follow.following.name}
-            for follow in user.following
-        ],
+        "followers": followers,
+        "following": following,
     }
+
+    logger.debug(
+        f"Profile retrieved: {len(followers)} followers, \
+        {len(following)} following"
+    )
+    return profile

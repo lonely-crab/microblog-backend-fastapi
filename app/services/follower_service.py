@@ -5,7 +5,10 @@
 from sqlalchemy import Column, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.logging import get_logger
 from app.db.models import Follower
+
+logger = get_logger("follower_service")
 
 
 async def follow_user(
@@ -30,6 +33,8 @@ async def follow_user(
         >>> await follow_user(session, 1, 2)
         True
     """
+    logger.info(f"User {follower_id} is trying to follow user {following_id}")
+
     result = await session.execute(
         select(Follower).where(
             Follower.follower_id == follower_id,
@@ -38,14 +43,23 @@ async def follow_user(
     )
 
     if result.scalar_one_or_none():
+        logger.debug(f"User {follower_id} already follows user {following_id}")
         return True
 
     new_follow = Follower(follower_id=follower_id, following_id=following_id)
 
-    session.add(new_follow)
-    await session.commit()
+    try:
+        session.add(new_follow)
+        await session.commit()
+        logger.info(
+            f"User {follower_id} successfully followed user {following_id}"
+        )
 
-    return True
+        return True
+    except Exception as e:
+        logger.exception(f"Failed to create follow relationship: {e}")
+
+        return False
 
 
 async def unfollow_user(
@@ -70,13 +84,22 @@ async def unfollow_user(
         >>> await unfollow_user(session, 1, 2)
         True
     """
+    logger.info(
+        f"User {follower_id} is trying to unfollow user {following_id}"
+    )
+
     await session.execute(
         delete(Follower).where(
             Follower.follower_id == follower_id,
             Follower.following_id == following_id,
         )
     )
+    try:
+        await session.commit()
+        logger.info(f"✅ User {follower_id} unfollowed user {following_id}")
 
-    await session.commit()
+        return True
+    except Exception as e:
+        logger.exception(f"Failed to remove follow relationship: {e}")
 
-    return True
+        return False

@@ -5,7 +5,14 @@ ORM-модели приложения: User, Tweet, Media, Like, Follower.
 from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
+from app.core.logging import get_logger
+
 from .database import Base, TimestampMixin
+
+logger = get_logger("models")
+
+
+logger.debug("ORM models loaded: User, Tweet, Media, Like, Follower")
 
 
 class User(Base):

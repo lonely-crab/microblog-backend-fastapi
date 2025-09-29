@@ -8,8 +8,11 @@ from fastapi import Depends, Header, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.logging import get_logger
 from app.db.database import get_db_session
 from app.db.models import User
+
+logger = get_logger("security")
 
 
 async def get_current_user(
@@ -35,10 +38,16 @@ async def get_current_user(
         >>> async def me(user: User = Depends(get_current_user)):
         >>>     return user
     """
+    logger.debug(f"Authenticating user with api-key: {api_key[:1]}...")
     result = await session.execute(select(User).where(User.api_key == api_key))
     user = result.scalar_one_or_none()
 
     if user is None:
+        logger.warning(
+            f"Authentication failed: invalid api-key '{api_key[:1]}...'"
+        )
         raise HTTPException(status_code=403, detail="Invalid API key")
+
+    logger.info(f"Authenticated user: {user.name} (ID: {user.id})")
 
     return user
