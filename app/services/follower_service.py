@@ -96,7 +96,7 @@ async def unfollow_user(
     )
     try:
         await session.commit()
-        logger.info(f"✅ User {follower_id} unfollowed user {following_id}")
+        logger.info(f"User {follower_id} unfollowed user {following_id}")
 
         return True
     except Exception as e:
