@@ -1,6 +1,6 @@
 # Microblog Backend
 
-![Demo Screenshot](image.png)
+![Demo Screenshot](docs/demo_screenshot.png)
 
 Backend for a corporate microblogging service, similar to Twitter.  
 Built with FastAPI, PostgreSQL + SQLAlchemy, and Docker — ready for production.
@@ -79,7 +79,7 @@ Swagger: http://localhost:8000/docs
     ```
 - Create users:
     ```sql
-    INSERT INTO users (name, api_key) VALUES ('user1', 'key1') ('user2', 'key2');
+    INSERT INTO users (name, api_key) VALUES ('user1', 'key1'), ('user2', 'key2');
     ```
 #### 4.2. All ready!
 ✅ Now everything is ready. Go test those buttons on the website!
@@ -102,29 +102,53 @@ Automatically runs on every push to dev/master/hotfix or release:
 ## 📂 Project Structure
 
 microblog-backend/
+
 ├── app/                      # Core application
+
 │   ├── api/v1/               # API routes
+
 │   ├── services/             # Business logic
+
 │   ├── schemas/              # Pydantic models
+
 │   ├── db/                   # Database models & setup
+
 │   └── main.py               # FastAPI entry point
+
 │
+
 ├── tests/                    # Test suite
+
 │   ├── unit/                 # Unit tests
+
 │   └── integration/          # Integration tests
+
 │
+
 ├── frontend/                 # Static frontend files
+
 │   ├── index.html            # Built HTML + JS 
+
 │   └── nginx.conf            # Reverse proxy config
+
 │
+
 ├── alembic/                  # Database migrations
+
 │   └── versions/             # Generated migration scripts
+
 │
+
 ├── .github/workflows/        # CI/CD pipelines
+
 │
+
 ├── docker-compose.yml        # Container orchestration
+
 ├── Dockerfile                # Backend image build
+
 └── README.md                 # This file
+
 
 
 ## 🗃 Database Schema
