@@ -57,7 +57,9 @@ class Tweet(Base, TimestampMixin):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     content = Column(Text, nullable=False)
-    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    author_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
 
     media = relationship(
         "Media", backref="tweet", cascade="all, delete-orphan"
@@ -76,7 +78,9 @@ class Media(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     file_path = Column(String, nullable=False)
-    tweet_id = Column(Integer, ForeignKey("tweets.id"), nullable=True)
+    tweet_id = Column(
+        Integer, ForeignKey("tweets.id", ondelete="CASCADE"), nullable=True
+    )
 
 
 class Like(Base):
@@ -88,8 +92,12 @@ class Like(Base):
 
     __tablename__ = "likes"
 
-    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    tweet_id = Column(Integer, ForeignKey("tweets.id"), primary_key=True)
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    tweet_id = Column(
+        Integer, ForeignKey("tweets.id", ondelete="CASCADE"), primary_key=True
+    )
 
 
 class Follower(Base):
@@ -101,6 +109,10 @@ class Follower(Base):
 
     __tablename__ = "followers"
     # Пользователь, который подписывается
-    follower_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    follower_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
     # Пользователь, на которого подписываются
-    following_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    following_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )

@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.db.database import Base, get_db_session
-from app.db.models import User
+from app.db.models import Follower, Like, Media, Tweet, User
 from app.main import app
 
 
@@ -89,3 +89,47 @@ async def test_user_2(session: AsyncSession) -> User:
         await session.refresh(user)
 
     return user
+
+
+@pytest.fixture
+async def test_follower(session: AsyncSession, test_user_1: User) -> Follower:
+    follower_user = User(name="Follower", api_key="follower_key")
+    session.add(follower_user)
+    await session.commit()
+
+    follow = Follower(
+        follower_id=follower_user.id, following_id=test_user_1.id
+    )
+    session.add(follow)
+    await session.commit()
+    return follow
+
+
+@pytest.fixture
+async def test_tweet(session: AsyncSession, test_user_1: User) -> Tweet:
+    tweet = Tweet(
+        content="Test tweet with media and likes", author_id=test_user_1.id
+    )
+    session.add(tweet)
+    await session.commit()
+    await session.refresh(tweet)
+    return tweet
+
+
+@pytest.fixture
+async def test_media(session: AsyncSession, test_tweet: Tweet) -> Media:
+    media = Media(file_path="/media/test.jpg", tweet_id=test_tweet.id)
+    session.add(media)
+    await session.commit()
+    await session.refresh(media)
+    return media
+
+
+@pytest.fixture
+async def test_like(
+    session: AsyncSession, test_tweet: Tweet, test_user_1: User
+) -> Like:
+    like = Like(user_id=test_user_1.id, tweet_id=test_tweet.id)
+    session.add(like)
+    await session.commit()
+    return like
