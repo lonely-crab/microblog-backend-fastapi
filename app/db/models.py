@@ -1,10 +1,27 @@
+"""
+ORM-модели приложения: User, Tweet, Media, Like, Follower.
+"""
+
 from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
+from app.core.logging import get_logger
+
 from .database import Base, TimestampMixin
+
+logger = get_logger("models")
+
+
+logger.debug("ORM models loaded: User, Tweet, Media, Like, Follower")
 
 
 class User(Base):
+    """
+    Модель пользователя.
+
+    Пользователь может создавать твиты, ставить лайки, иметь подписчиков.
+    """
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -30,11 +47,19 @@ class User(Base):
 
 
 class Tweet(Base, TimestampMixin):
+    """
+    Модель твита.
+
+    Твит содержит текст, ссылку на автора, медиа и лайки.
+    """
+
     __tablename__ = "tweets"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     content = Column(Text, nullable=False)
-    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    author_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
 
     media = relationship(
         "Media", backref="tweet", cascade="all, delete-orphan"
@@ -43,23 +68,51 @@ class Tweet(Base, TimestampMixin):
 
 
 class Media(Base):
+    """
+    Модель медиафайла (например, изображения).
+
+    Связана с твитом через внешний ключ.
+    """
+
     __tablename__ = "media"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     file_path = Column(String, nullable=False)
-    tweet_id = Column(Integer, ForeignKey("tweets.id"), nullable=True)
+    tweet_id = Column(
+        Integer, ForeignKey("tweets.id", ondelete="CASCADE"), nullable=True
+    )
 
 
 class Like(Base):
+    """
+    Модель лайка.
+
+    Составной первичный ключ: (user_id, tweet_id).
+    """
+
     __tablename__ = "likes"
 
-    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    tweet_id = Column(Integer, ForeignKey("tweets.id"), primary_key=True)
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    tweet_id = Column(
+        Integer, ForeignKey("tweets.id", ondelete="CASCADE"), primary_key=True
+    )
 
 
 class Follower(Base):
+    """
+    Модель подписки.
+
+    Составной первичный ключ: (follower_id, following_id).
+    """
+
     __tablename__ = "followers"
-    # user that follows
-    follower_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    # are followed by user
-    following_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    # Пользователь, который подписывается
+    follower_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    # Пользователь, на которого подписываются
+    following_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
