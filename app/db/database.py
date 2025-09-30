@@ -30,7 +30,7 @@ no_pw_url = DATABASE_URL
 if no_pw_url and "@" in no_pw_url:
     no_pw_url = "postgresql+asyncpg://user:***@" + no_pw_url.split("@")[1]
 
-logger.info(f"🚀 Initializing database connection to: {no_pw_url}")
+logger.info(f"Initializing database connection to: {no_pw_url}")
 
 
 engine = create_async_engine(url=DATABASE_URL)  # type: ignore

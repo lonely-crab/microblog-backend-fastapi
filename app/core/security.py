@@ -8,9 +8,10 @@ from fastapi import Depends, Header, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.logging import get_logger
 from app.db.database import get_db_session
 from app.db.models import User
+
+from .logging import get_logger
 
 logger = get_logger("security")
 
