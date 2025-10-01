@@ -5,6 +5,7 @@
 import asyncio
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from app.api.v1 import media, tweets, users
@@ -27,6 +28,10 @@ app = FastAPI(
 app.include_router(tweets.router)
 app.include_router(media.router)
 app.include_router(users.router)
+
+
+# Serving static files (for demo frontend)
+app.mount("/media", StaticFiles(directory="/app/app/media"), name="media")
 
 
 # adding tables on startup
