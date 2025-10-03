@@ -10,3 +10,5 @@ coverage[toml]
 trio
 aiosqlite
 python-multipart
+mock
+pytest-mock

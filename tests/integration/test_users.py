@@ -33,6 +33,36 @@ async def test_get_user_profile(client: AsyncClient, test_user_1: User):
 
 
 @pytest.mark.anyio
+async def test_get_user_profile_not_found(
+    client: AsyncClient, test_user_1: User
+):
+    response = await client.get(
+        "/api/users/999999", headers={"api-key": str(test_user_1.api_key)}
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] is False
+    assert data["error_type"] == "UserNotFound"
+
+
+@pytest.mark.anyio
+async def test_follow_self_forbidden(client: AsyncClient, test_user_1: User):
+    """
+    Проверяет запрет подписки на себя.
+    """
+    response = await client.post(
+        f"/api/users/{test_user_1.id}/follow",
+        headers={"api-key": str(test_user_1.api_key)},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] is False
+    assert data["error_type"] == "FollowError"
+
+
+@pytest.mark.anyio
 async def test_follow_unfollow_user(
     client: AsyncClient, test_user_1: User, test_user_2: User
 ):

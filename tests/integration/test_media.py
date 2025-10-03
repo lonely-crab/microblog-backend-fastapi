@@ -7,16 +7,21 @@ from app.db.models import User
 
 
 @pytest.mark.anyio
-async def test_upload_media(client: AsyncClient, test_user_1):
+async def test_upload_media_success(
+    client: AsyncClient, test_user_1: User, caplog
+):
     file_content = b"fake image content"
     file = BytesIO(file_content)
     file.name = "test.jpg"
 
-    response = await client.post(
-        "/api/medias",
-        files={"file": ("test.jpg", file, "image/jpeg")},
-        headers={"api-key": test_user_1.api_key},
-    )
+    with caplog.at_level("INFO"):
+        response = await client.post(
+            "/api/medias",
+            files={"file": ("test.jpg", file, "image/jpeg")},
+            headers={"api-key": str(test_user_1.api_key)},
+        )
+        assert "Media uploaded successfully:" in caplog.text
+        assert f"{test_user_1.id}" in caplog.text
 
     assert response.status_code == 200
     data = response.json()
@@ -71,3 +76,27 @@ async def test_upload_media_forbidden_format(
 
     error_message = data.get("error_message")
     assert error_message == "Unacceptable file format."
+
+
+@pytest.mark.anyio
+async def test_post_medias_exception_empty_media(
+    mocker, client, caplog, test_user_1
+):
+    mocker.patch("app.api.v1.media.save_upload_file", return_value=None)
+
+    test_file = ("test.png", b"fake image content", "image/png")
+
+    with caplog.at_level("ERROR"):
+        response = await client.post(
+            "/api/medias",
+            headers={"api-key": test_user_1.api_key},
+            files={"file": test_file},
+        )
+        assert "Failed to upload media" in caplog.text
+        assert "File path is empty after saving the file" in caplog.text
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] is False
+    assert data["error_type"] == "FileUploadError"
+    assert "File path is empty" in data["error_message"]
