@@ -1,5 +1,9 @@
+import logging
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -61,6 +65,25 @@ async def test_create_tweet_with_media(
 
 
 @pytest.mark.anyio
+async def test_create_tweet_exception(caplog):
+    mock_session = AsyncMock()
+    mock_session.commit.side_effect = SQLAlchemyError("DB commit failed")
+
+    request = type(
+        "Request", (), {"tweet_data": "test_string", "tweet_media_ids": []}
+    )
+
+    with pytest.raises(SQLAlchemyError):
+        with caplog.at_level(logging.ERROR):
+            result = await create_tweet(
+                session=mock_session, request=request, author_id=1
+            )
+            assert result is None
+            assert "Failed to create tweet" in caplog.text
+            assert "DB commit failed" in caplog.text
+
+
+@pytest.mark.anyio
 async def test_delete_tweet_success(
     session: AsyncSession, test_user_1: User, test_tweet_1: Tweet
 ):
@@ -104,6 +127,29 @@ async def test_get_user_tweet_empty(session: AsyncSession, test_user_1: User):
 
 
 @pytest.mark.anyio
+async def test_delete_tweet_exception(caplog):
+    mock_session = AsyncMock()
+    mock_result = MagicMock()
+
+    mock_result.scalar_one_or_none.return_value = True
+    mock_session.execute.return_value = mock_result
+    mock_session.commit.side_effect = SQLAlchemyError("DB commit failed")
+
+    with caplog.at_level(logging.ERROR):
+        result = await delete_tweet(
+            session=mock_session, tweet_id=1, current_user_id=1
+        )
+
+        mock_session.delete.assert_awaited()
+
+        mock_session.commit.assert_awaited()
+
+        assert result is False
+        assert "Failed to delete tweet" in caplog.text
+        assert "DB commit failed" in caplog.text
+
+
+@pytest.mark.anyio
 async def test_get_user_feed_with_following(
     session: AsyncSession,
     test_user_1: User,
@@ -121,3 +167,17 @@ async def test_get_user_feed_with_following(
     assert tweets[0].get("id") == test_tweet_1.id
     assert len(tweets) == 1
     assert tweets[0].get("author").get("id") == test_user_1.id
+
+
+@pytest.mark.anyio
+async def test_get_user_feed_exception(caplog):
+    mock_session = AsyncMock()
+    mock_result = MagicMock()
+
+    mock_session.execute.side_effect = SQLAlchemyError("DB commit failed")
+
+    with caplog.at_level(logging.ERROR):
+        result = await get_user_feed(session=mock_session, user_id=1)
+
+        assert result == []
+        assert "Failed to load feed for user" in caplog.text

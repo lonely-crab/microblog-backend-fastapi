@@ -11,12 +11,15 @@ from app.services.tweet_service import create_tweet
 
 
 @pytest.mark.anyio
-async def test_create_tweet(client: AsyncClient, test_user_1: User):
-    response = await client.post(
-        "/api/tweets",
-        json={"tweet_data": "Test string.", "tweet_media_ids": []},
-        headers={"api-key": str(test_user_1.api_key)},
-    )
+async def test_create_tweet(client: AsyncClient, test_user_1: User, caplog):
+    with caplog.at_level("INFO"):
+        response = await client.post(
+            "/api/tweets",
+            json={"tweet_data": "Test string.", "tweet_media_ids": []},
+            headers={"api-key": str(test_user_1.api_key)},
+        )
+        assert "Tweet created:" in caplog.text
+        assert f"{test_user_1.id}" in caplog.text
 
     assert response.status_code == 200
 
@@ -42,7 +45,9 @@ async def test_create_tweet_with_invalid_data(
 
 
 @pytest.mark.anyio
-async def test_delete_own_tweet(client: AsyncClient, test_user_1: User):
+async def test_delete_own_tweet(
+    caplog, client: AsyncClient, test_user_1: User
+):
     create_resp = await client.post(
         "/api/tweets",
         json={"tweet_data": "To be deleted", "tweet_media_ids": []},
@@ -50,12 +55,40 @@ async def test_delete_own_tweet(client: AsyncClient, test_user_1: User):
     )
     tweet_id = create_resp.json()["data"]["tweet_id"]
 
-    delete_resp = await client.delete(
-        f"/api/tweets/{tweet_id}",
-        headers={"api-key": str(test_user_1.api_key)},
-    )
+    with caplog.at_level("INFO"):
+        delete_resp = await client.delete(
+            f"/api/tweets/{tweet_id}",
+            headers={"api-key": str(test_user_1.api_key)},
+        )
+        assert (
+            f"Tweet {tweet_id} deleted by user {test_user_1.id}" in caplog.text
+        )
+        assert delete_resp.json()["result"] is True
+
     assert delete_resp.status_code == 200
-    assert delete_resp.json()["result"] is True
+
+
+@pytest.mark.anyio
+async def test_delete_tweet_exception(
+    caplog, mocker, client: AsyncClient, test_user_1: User
+):
+    mocker.patch("app.api.v1.tweets.delete_tweet", return_value=False)
+
+    with caplog.at_level("WARNING"):
+        response = await client.delete(
+            "/api/tweets/9999",
+            headers={"api-key": str(test_user_1.api_key)},
+        )
+        assert (
+            f"User {test_user_1.id} tried to delete non-existent             or unauthorized tweet 9999\n"
+            in caplog.text
+        )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] is False
+    assert data["error_type"] == "NotFound"
+    assert data["error_message"] == "Tweet not found or not owned by user"
 
 
 @pytest.mark.anyio
@@ -102,6 +135,7 @@ async def test_get_feed_sorted_by_popularity(
     client: AsyncClient,
     test_user_1: User,
     test_user_2: User,
+    caplog,
 ):
 
     # subscribe user_1 on user_2
@@ -126,12 +160,38 @@ async def test_get_feed_sorted_by_popularity(
         await add_like(session, tweet_id=tweet_1, user_id=test_user_1.id)
 
     # get_feed for user_1
-    response = await client.get(
-        "/api/tweets", headers={"api-key": str(test_user_1.api_key)}
-    )
-    assert response.status_code == 200
-    tweets = response.json()["data"]["tweets"]
+    with caplog.at_level("DEBUG"):
+        response = await client.get(
+            "/api/tweets", headers={"api-key": str(test_user_1.api_key)}
+        )
+        assert response.status_code == 200
+        assert response.json()["result"] is True
+        tweets = response.json()["data"]["tweets"]
 
-    # Check order
-    assert tweets[0]["id"] == tweet_1
-    assert tweets[1]["id"] == tweet_2
+        # Check order
+        assert tweets[0]["id"] == tweet_1
+        assert tweets[1]["id"] == tweet_2
+
+        assert f"Feed loaded:" in caplog.text
+        assert f"{test_user_1.id}" in caplog.text
+
+
+@pytest.mark.anyio
+async def test_get_tweets_exception(
+    caplog, mocker, client: AsyncClient, test_user_1: User
+):
+    mocker.patch(
+        "app.api.v1.tweets.get_user_feed",
+        side_effect=Exception("Error while loading feed"),
+    )
+
+    with caplog.at_level("ERROR"):
+        response = await client.get(
+            "/api/tweets", headers={"api-key": str(test_user_1.api_key)}
+        )
+
+        assert f"Error loading feed for user {test_user_1.id}" in caplog.text
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] is False

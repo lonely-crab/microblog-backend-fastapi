@@ -1,4 +1,8 @@
+import logging
+from unittest.mock import AsyncMock
+
 import pytest
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Media
@@ -19,5 +23,19 @@ async def test_upload_media(session: AsyncSession):
     assert media.tweet_id is None
 
 
-# add media test for potentially bad files
-# + add function in security.py that avoids bad files like .exe etc.
+@pytest.mark.anyio
+async def test_upload_media_exception(caplog):
+    # Создаём мок-сессию
+    mock_session = AsyncMock()
+
+    # Имитируем выброс исключения при commit()
+    mock_session.commit.side_effect = SQLAlchemyError("DB commit failed")
+
+    with pytest.raises(SQLAlchemyError):
+        with caplog.at_level(logging.ERROR):
+            result = await upload_media(
+                session=mock_session, file_path="/media/test.jpg"
+            )
+            assert result is None
+            assert "Failed to upload media" in caplog.text
+            assert "DB commit failed" in caplog.text

@@ -31,7 +31,7 @@ app.include_router(users.router)
 
 
 # Serving static files (for demo frontend)
-app.mount("/media", StaticFiles(directory="/app/app/media"), name="media")
+app.mount("/media", StaticFiles(directory="./app/media"), name="media")
 
 
 # adding tables on startup
