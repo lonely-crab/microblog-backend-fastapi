@@ -1,11 +1,7 @@
 import pytest
-from httpx import AsyncClient
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 
-from app.db.models import Tweet, User
 from app.main import startup_event
-from app.schemas import CreateTweetRequest
 
 
 @pytest.mark.anyio

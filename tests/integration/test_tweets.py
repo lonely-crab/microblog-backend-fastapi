@@ -80,7 +80,8 @@ async def test_delete_tweet_exception(
             headers={"api-key": str(test_user_1.api_key)},
         )
         assert (
-            f"User {test_user_1.id} tried to delete non-existent             or unauthorized tweet 9999\n"
+            f"User {test_user_1.id} tried to delete non-existent \
+                  or unauthorized tweet 9999\n"
             in caplog.text
         )
 
@@ -172,7 +173,7 @@ async def test_get_feed_sorted_by_popularity(
         assert tweets[0]["id"] == tweet_1
         assert tweets[1]["id"] == tweet_2
 
-        assert f"Feed loaded:" in caplog.text
+        assert "Feed loaded:" in caplog.text
         assert f"{test_user_1.id}" in caplog.text
 
 

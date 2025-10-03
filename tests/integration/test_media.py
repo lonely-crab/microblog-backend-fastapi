@@ -1,9 +1,7 @@
 from io import BytesIO
 
 import pytest
-from fastapi import UploadFile
 from httpx import AsyncClient
-from mock import AsyncMock, patch
 
 from app.db.models import User
 

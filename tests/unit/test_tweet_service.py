@@ -172,7 +172,6 @@ async def test_get_user_feed_with_following(
 @pytest.mark.anyio
 async def test_get_user_feed_exception(caplog):
     mock_session = AsyncMock()
-    mock_result = MagicMock()
 
     mock_session.execute.side_effect = SQLAlchemyError("DB commit failed")
 

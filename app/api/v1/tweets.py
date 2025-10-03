@@ -148,7 +148,7 @@ async def delete_tweets(
     if not success:
         logger.warning(
             f"User {current_user.id} tried to delete non-existent \
-            or unauthorized tweet {tweet_id}"
+                  or unauthorized tweet {tweet_id}"
         )
 
         return ApiResponse(

@@ -7,4 +7,4 @@ temp.py
 linters.sh
 collect_files.sh
 !./app/media/.gitkeep
-./app/media/*
+/app/media/*
